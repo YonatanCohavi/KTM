@@ -21,7 +21,7 @@ jobs:
         working-directory: ./src
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: Cecilapp/GitHub-Pages-deploy@3.3.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./src/dist 
+          build_dir: ./src/dist 
