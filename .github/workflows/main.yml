@@ -29,11 +29,7 @@ jobs:
         with:
           path: ./src/dist/
 
-      #- name: Deploy to GitHub Pages
-        # id: deployment
-        # uses: actions/deploy-pages@v4
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./src/dist/
+        id: deployment
+        uses: actions/deploy-pages@v4
+      
