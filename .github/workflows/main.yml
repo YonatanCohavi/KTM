@@ -8,6 +8,10 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for actions/deploy-pages
+      pages: write # Needed for actions/deploy-pages
+      id-token: write # Needed for actions/deploy-pages
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,8 +24,11 @@ jobs:
         run: npm run build
         working-directory: ./src
 
-      - name: Deploy to GitHub Pages
-        uses: Cecilapp/GitHub-Pages-deploy@3.3.0
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          build_dir: ./src/dist 
+          path: ./src/dist 
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
