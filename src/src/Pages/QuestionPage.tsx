@@ -65,7 +65,12 @@ const QuestionPage = () => {
     function newQuestion() {
         if (!members)
             return;
-        const q = GetQuestion(members);
+        const exclude: number[] = [];
+        if (question) {
+            exclude.push(question?.answer.id);
+            exclude.push(...question.options.map(o => o.id));
+        }
+        const q = GetQuestion(members, exclude);
         setQuestion(q);
         setWrongAnswers([]);
         setQuestionStartTime(new Date());
