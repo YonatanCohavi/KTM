@@ -95,7 +95,7 @@ const QuestionPage = () => {
             <div className="grid gap-2">
                 {question.options.map((option) => (
                     <div key={option.id} className={cn("flex", { "gap-4": wrongAnswers.includes(option.id) })}>
-                        <Button className={cn(question.answer.id === option.id && "bg-amber-800", "flex h-16 opacity-100 grow transition-all", { shake: wrongAnswers.includes(option.id) })} onClick={() => answer(option.id)} disabled={wrongAnswers.includes(option.id)}>
+                        <Button className={cn( "flex h-16 opacity-100 grow transition-all", { shake: wrongAnswers.includes(option.id) })} onClick={() => answer(option.id)} disabled={wrongAnswers.includes(option.id)}>
                             <span>
                                 {option.firstName} {option.lastName}
                             </span>
