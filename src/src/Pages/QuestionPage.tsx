@@ -20,7 +20,7 @@ interface FloatingNumber {
 const QuestionPage = () => {
     const stats = loadStats();
     const fireworksRef = useRef<FireworksHandlers>(null)
-    const [showFireworks, setShowFireworks] = useState(true);
+    const [showFireworks, setShowFireworks] = useState(false);
     const [wrongAnswers, setWrongAnswers] = useState<number[]>([]);
     const [numbers, setNumbers] = useState<FloatingNumber[]>([]);
 

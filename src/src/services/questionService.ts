@@ -10,12 +10,19 @@ export type Question = {
     answer: Member,
     options: Member[]
 }
-export function GetQuestion(members: Member[]): Question | undefined {
-    const weights = initWeights(members);
+export function GetQuestion(members: Member[], exclude:number[] = []): Question | undefined {
+    const weights = initWeights(members).filter(w => !exclude.includes(w.id));
     if (weights.length === 0) {
         console.log("No members available to select from.");
         return;
     }
+    function shuffle(array: any[]) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+    shuffle(weights);
     const weight = pickWeight(weights);
     const options: weight[] = [weight];
     const selectedIds = options.map(o => o.id);
@@ -24,12 +31,7 @@ export function GetQuestion(members: Member[]): Question | undefined {
         options.push(selected);
         selectedIds.push(selected.id);
     }
-    function shuffle(array: any[]) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
+    
     shuffle(options);
     return {
         answer: members.find(m => m.id === weight.id)!,
