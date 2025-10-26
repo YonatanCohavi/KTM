@@ -5,7 +5,7 @@ import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { getLevelName, getTotalXPForLevel, loadStats, updateStats } from "@/services/statsService";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GraduationCap, StarIcon, ZapIcon } from "lucide-react"
+import { BabyIcon, BookIcon, BookOpenIcon, BrainIcon, GraduationCapIcon, LightbulbIcon, MicroscopeIcon, PuzzleIcon, RocketIcon, StarIcon, ZapIcon } from "lucide-react"
 import { Progress } from "@/components/ui/progress";
 import type { FireworksHandlers } from '@fireworks-js/react'
 import FireworksComponent from "@/components/FireworksComponent";
@@ -16,7 +16,18 @@ interface FloatingNumber {
     y: number;
     value: number;
 }
-
+const tierIcons = [
+    <BabyIcon />,
+    <BookOpenIcon />,
+    <LightbulbIcon />,
+    <PuzzleIcon />,
+    <BrainIcon />,
+    <MicroscopeIcon />,
+    <BookIcon />,
+    <GraduationCapIcon />,
+    <ZapIcon />,
+    <RocketIcon />,
+]
 const QuestionPage = () => {
     const stats = loadStats();
     const fireworksRef = useRef<FireworksHandlers>(null)
@@ -146,7 +157,7 @@ const QuestionPage = () => {
                 </div>
                 <div className="flex flex-col items-end mr-0">
                     <div className="flex gap-2 items-center">
-                        <GraduationCap />
+                        {tierIcons[Math.min(tierIcons.length - 1, Math.floor(stats.level / 10))]}
                         {playrsStatus.level.toLocaleString()}
                     </div>
                     <div>
@@ -158,14 +169,13 @@ const QuestionPage = () => {
                 <Progress value={(stats.xp - levels.currentLevelXP) / (levels.nextLevelXP - levels.currentLevelXP) * 100} />
 
             </div>
-            <div className="mx-auto">
+            <div className="mx-auto grow flex items-center h-full">
                 <Avatar className="size-72">
                     <AvatarImage src={question.answer.imageUrl} className="object-cover " alt="User Avatar" />
                     <AvatarFallback></AvatarFallback>
                 </Avatar>
             </div>
-            <div className="grow">
-            </div>
+            {/* <div className="grow"/> */}
             <div className="grid gap-2">
                 {question.options.map((option) => (
                     <div key={option.id} className={cn("flex", { "gap-4": wrongAnswers.includes(option.id) })}>

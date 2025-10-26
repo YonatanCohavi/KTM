@@ -6,16 +6,29 @@ type PlayerStats = {
 };
 
 type UpdateOptions = {
-  basePoints: number;        
-  responseTimeSec?: number;  
-  penalizeStreak?: boolean; 
+  basePoints: number;
+  responseTimeSec?: number;
+  penalizeStreak?: boolean;
 };
 
 type UpdateRespose = {
-stats:PlayerStats,
-leveledUp: boolean
-xpGained: number
+  stats: PlayerStats,
+  leveledUp: boolean
+  xpGained: number
 }
+
+export const knowledgeLevelIcons = [
+  "Baby",       // 1 - Newbie
+  "BookOpen",   // 2 - Student
+  "Lightbulb",  // 3 - Thinker
+  "Puzzle",     // 4 - Problem Solver
+  "Brain",      // 5 - Scholar
+  "Microscope", // 6 - Researcher
+  "Book",       // 7 - Expert
+  "GraduationCap", // 8 - Professor
+  "Zap",        // 9 - Genius
+  "Owl",        // 10 - Sage / Wisdom Master
+];
 export const LEVEL_NAMES_HE: string[] = [
   // 1–10: מתחיל
   "מתחיל",
@@ -81,7 +94,7 @@ export const LEVEL_NAMES_HE: string[] = [
 
 export function getLevelName(level: number): string {
   if (level < 1) return "לא ידוע";
-  if (level > LEVEL_NAMES_HE.length) return LEVEL_NAMES_HE[LEVEL_NAMES_HE.length - 1    ];
+  if (level > LEVEL_NAMES_HE.length) return LEVEL_NAMES_HE[LEVEL_NAMES_HE.length - 1];
   return LEVEL_NAMES_HE[level - 1];
 }
 const STORAGE_KEY = "playerStats";
