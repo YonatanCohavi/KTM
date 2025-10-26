@@ -23,8 +23,6 @@
 
 .floating-number {
   position: absolute;
-  font-size: 24px;
-  font-weight: bold;
   pointer-events: none;
   animation: floatUp 1.2s forwards;
 }

@@ -118,18 +118,18 @@ const QuestionPage = () => {
         <div className="flex flex-col p-4 h-full justify-center gap-4">
             <div className="flex justify-between text-center text-xl font-semibold">
                 <div className="flex gap-2">
-                    <StarIcon className="text-amber-400" fill="var(--color-amber-400)" />
+                    <StarIcon className="" fill="var(--color-amber-400)" />
                     {playrsStatus.xp.toLocaleString()}
                     <span className="text-gray-500">/ {levels.nextLevelXP.toLocaleString()}</span>
                 </div>
 
                 <div className="flex flex-col items-center">
                     <div className="flex gap-2 items-center">
-                        <GraduationCap fill="var(--color-gray-300)" />
+                        <GraduationCap />
                         {playrsStatus.level.toLocaleString()}
                     </div>
                     <div>
-                        <span className="text-gray-500 font-medium text-sm">({getLevelName(playrsStatus.level)})</span>
+                        <span className="text-gray-500 font-medium text-sm">{getLevelName(playrsStatus.level)}</span>
                     </div>
                 </div>
             </div>
@@ -170,7 +170,7 @@ const QuestionPage = () => {
                 <div
                     dir="auto"
                     key={num.id}
-                    className={cn("floating-number", num.value > 0 ? "text-blue-700" : "text-red-500")}
+                    className={cn("floating-number text-2xl", num.value > 0 ? "" : "text-red-500")}
                     style={{ left: num.x, top: num.y }}
                     onAnimationEnd={() => handleAnimationEnd(num.id)}
                 >

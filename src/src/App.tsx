@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex  flex-col mx-auto h-screen">
+      <div className="flex  flex-col mx-auto h-screen" >
         {/* // Toolbar */}
         <div className="flex bg-primary text-background p-4 shadow  justify-around items-center gap-4">
           <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center">
