@@ -4,10 +4,9 @@ import { cn } from "@/lib/utils";
 import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { getLevelName, getTotalXPForLevel, loadStats, updateStats } from "@/services/statsService";
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GraduationCap, StarIcon, ZapIcon } from "lucide-react"
 import { Progress } from "@/components/ui/progress";
-import { Fireworks } from '@fireworks-js/react'
 import type { FireworksHandlers } from '@fireworks-js/react'
 import FireworksComponent from "@/components/FireworksComponent";
 
@@ -196,8 +195,8 @@ const QuestionPage = () => {
                     </span>
                 </div>
             ))}
-              {showFireworks && <FireworksComponent className="fixed -z-50 h-screen w-screen"/>}
-          
+            {showFireworks && <FireworksComponent className="fixed -z-50 h-screen w-screen" />}
+
         </div>
 
     );
