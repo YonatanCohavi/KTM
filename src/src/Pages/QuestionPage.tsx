@@ -130,8 +130,8 @@ const QuestionPage = () => {
 
     return (
         <div className="flex flex-col p-4 h-full justify-center gap-4">
-            <div className="grid grid-cols-3 items-center justify-center text-center text-xl font-semibold ">
-                <div className="flex gap-2">
+            <div className="grid grid-cols-[auto_1fr_auto] items-center justify-center text-center text-xl font-semibold ">
+                <div className="flex gap-2 whitespace-nowrap">
                     <StarIcon className="" fill="var(--color-amber-400)" />
                     {playrsStatus.xp.toLocaleString()}
                     <span className="text-gray-500">/ {levels.nextLevelXP.toLocaleString()}</span>
