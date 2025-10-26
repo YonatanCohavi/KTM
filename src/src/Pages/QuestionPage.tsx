@@ -6,13 +6,21 @@ import { GetQuestion, setAnswer, type Question } from "@/services/questionServic
 import { getLevelName, getTotalXPForLevel, loadStats, updateStats } from "@/services/statsService";
 import { useEffect, useMemo, useState } from "react";
 import { GraduationCap, StarIcon } from "lucide-react"
-import { toast } from "sonner"
 import { Progress } from "@/components/ui/progress";
 
+
+interface FloatingNumber {
+    id: number;
+    x: number;
+    y: number;
+    value: number;
+}
 
 const QuestionPage = () => {
     const stats = loadStats();
     const [wrongAnswers, setWrongAnswers] = useState<number[]>([]);
+    const [numbers, setNumbers] = useState<FloatingNumber[]>([]);
+
     const [question, setQuestion] = useState<Question | undefined>(undefined);
     const { data: members } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState(stats);
@@ -24,9 +32,26 @@ const QuestionPage = () => {
         }
     }, [stats.level])
 
+
+    const showScore = (e: React.MouseEvent, value: number) => {
+        const newNumber: FloatingNumber = {
+            id: Date.now(),
+            x: e.clientX,
+            y: e.clientY,
+            value
+        };
+
+        setNumbers((prev) => [...prev, newNumber]);
+    };
+
+    const handleAnimationEnd = (id: number) => {
+        setNumbers((prev) => prev.filter((num) => num.id !== id));
+    };
+
     useEffect(() => {
         newQuestion();
     }, [members]);
+
 
 
     function newQuestion() {
@@ -48,30 +73,38 @@ const QuestionPage = () => {
         });
     }, [question]);
 
-    function answer(optionId: number) {
+    function answer(e: React.MouseEvent, optionId: number) {
         if (!question)
             return;
+
         let correct = true;
+        let points = 10;
         if (optionId != question.answer.id) {
             setWrongAnswers([...wrongAnswers, optionId]);
             correct = false;
         }
+        // user clicked on the last option
         if (wrongAnswers.length >= 3) {
-            correct = false;
+            newQuestion();
+            return;
         }
 
+        // did not know both members
         setAnswer(optionId, correct);
-        let points = 12;
+        setAnswer(question.answer.id, correct);
+
         if (correct) {
             points -= (wrongAnswers.length) * 3;
-        }
-        const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
-        console.log(`Response time: ${responseTimeSec.toFixed(2)} sec`);
-        const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: -6, penalizeStreak: true });
-        if (xpGained > 0) {
-            toast.success(`נכון! הרווחת ${xpGained} נקודות`, { duration: 3000, position: "top-center" });
         } else {
-            toast.error(`לא נכון! הפסדת ${xpGained * -1} נקודות`, { duration: 3000, position: "top-center" });
+            points *= -1;
+        }
+        console.log(`Points before time bonus: ${points} ${wrongAnswers.length} wrong answers`);
+        const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
+        const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: points, penalizeStreak: true });
+        if (xpGained > 0) {
+            showScore(e, xpGained);
+        } else {
+            showScore(e, xpGained);
         }
         setPlayerStatus(newStatus);
 
@@ -80,6 +113,7 @@ const QuestionPage = () => {
     }
     if (!members || !question)
         return <div className="flex h-full justify-center items-center text-2xl font-semibold">מחכה לחברים..</div>;
+
     return (
         <div className="flex flex-col p-4 h-full justify-center gap-4">
             <div className="flex justify-between text-center text-xl font-semibold">
@@ -114,7 +148,10 @@ const QuestionPage = () => {
             <div className="grid gap-2">
                 {question.options.map((option) => (
                     <div key={option.id} className={cn("flex", { "gap-4": wrongAnswers.includes(option.id) })}>
-                        <Button className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-16 opacity-100 grow transition-all", { shake: wrongAnswers.includes(option.id) })} onClick={() => answer(option.id)} disabled={wrongAnswers.includes(option.id)}>
+                        <Button
+                            className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-16 opacity-100 grow transition-all", { shake: wrongAnswers.includes(option.id) })}
+                            onClick={(e) => answer(e, option.id)}
+                            disabled={wrongAnswers.includes(option.id)}>
                             <span>
                                 {option.firstName} {option.lastName}
                             </span>
@@ -129,6 +166,19 @@ const QuestionPage = () => {
                     </div>
                 ))}
             </div>
+            {numbers.map((num) => (
+                <div
+                    dir="auto"
+                    key={num.id}
+                    className={cn("floating-number", num.value > 0 ? "text-blue-700" : "text-red-500")}
+                    style={{ left: num.x, top: num.y }}
+                    onAnimationEnd={() => handleAnimationEnd(num.id)}
+                >
+                    <span className="size-4 font-semibold rounded-full">
+                    {num.value > 0 ? `+${num.value}` : num.value}
+                    </span>
+                </div>
+            ))}
         </div>
     );
 }

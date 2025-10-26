@@ -8,3 +8,23 @@
  75% { transform: translateX(5px) }
  100% { transform: translateX(0) }
 }
+
+
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(1);
+  }
+}
+
+.floating-number {
+  position: absolute;
+  font-size: 24px;
+  font-weight: bold;
+  pointer-events: none;
+  animation: floatUp 1.2s forwards;
+}

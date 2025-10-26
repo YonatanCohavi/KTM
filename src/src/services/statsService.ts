@@ -103,9 +103,9 @@ export function updateStats(
 
   // --- 2. Multipliers ---
   const streakMultiplier = 1 + streak * 0.05;
-  const luckyBoost = basePoints > 0 && Math.random() < 0.1 ? 2 : 1;
+  //const luckyBoost = basePoints > 0 && Math.random() < 0.1 ? 2 : 1;
+  const luckyBoost = 1;
   const timeBonusMultiplier = getTimeBonusMultiplier(responseTimeSec);
-  console.log(`${responseTimeSec}`);
   const totalChange = Math.round(basePoints * streakMultiplier * luckyBoost * timeBonusMultiplier);
 
   // --- 3. Level progression ---
@@ -120,7 +120,6 @@ export function updateStats(
   let level = player.level;
   if (xp >= nextLevelXP) {
     level++;
-    console.log(`🎉 Level up! Reached level ${level}`);
   }
 
   // --- 4. Save and return updated state ---
