@@ -6,8 +6,9 @@ type PlayerStats = {
 };
 
 type UpdateOptions = {
-    basePoints: number; // Can be positive or negative
-    penalizeStreak?: boolean; // Optional: should streak be reduced for bad actions
+  basePoints: number;        
+  responseTimeSec?: number;  
+  penalizeStreak?: boolean; 
 };
 
 type UpdateRespose = {
@@ -76,6 +77,8 @@ export const LEVEL_NAMES_HE: string[] = [
   "אין-סופי",
   "עליון",
 ];
+
+
 export function getLevelName(level: number): string {
   if (level < 1) return "לא ידוע";
   if (level > LEVEL_NAMES_HE.length) return LEVEL_NAMES_HE[LEVEL_NAMES_HE.length - 1    ];
@@ -87,7 +90,7 @@ export function updateStats(
   options: UpdateOptions
 ): UpdateRespose {
   const now = new Date();
-  const { basePoints, penalizeStreak = false } = options;
+  const { responseTimeSec, basePoints, penalizeStreak = false } = options;
 
   // --- 1. Handle streaks ---
   const hoursSinceLastPlay =
@@ -101,7 +104,9 @@ export function updateStats(
   // --- 2. Multipliers ---
   const streakMultiplier = 1 + streak * 0.05;
   const luckyBoost = basePoints > 0 && Math.random() < 0.1 ? 2 : 1;
-  const totalChange = Math.round(basePoints * streakMultiplier * luckyBoost);
+  const timeBonusMultiplier = getTimeBonusMultiplier(responseTimeSec);
+  console.log(`${responseTimeSec}`);
+  const totalChange = Math.round(basePoints * streakMultiplier * luckyBoost * timeBonusMultiplier);
 
   // --- 3. Level progression ---
   const currentLevelXP = getTotalXPForLevel(player.level);
@@ -126,6 +131,14 @@ export function updateStats(
     leveledUp: level > player.level,
     xpGained: totalChange
   };
+}
+
+function getTimeBonusMultiplier(responseTimeSec?: number): number {
+  if (responseTimeSec === undefined) return 1;
+  if (responseTimeSec <= 2) return 1.3;  // +30%
+  if (responseTimeSec <= 5) return 1.15; // +15%
+  if (responseTimeSec <= 10) return 1.05; // +5%
+  return 1; // no bonus
 }
 
 /**

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import { QuestionPage } from "./Pages/QuestionPage"
 import logo from "./assets/logo.png"
+import { Toaster } from "./components/ui/sonner"
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -29,6 +30,8 @@ function App() {
           <QuestionPage />
         </div>
       </div>
+      <Toaster />
+
     </QueryClientProvider>
   )
 }

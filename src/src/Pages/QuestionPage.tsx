@@ -4,8 +4,11 @@ import { cn } from "@/lib/utils";
 import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { getLevelName, getTotalXPForLevel, loadStats, updateStats } from "@/services/statsService";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GraduationCap, StarIcon } from "lucide-react"
+import { toast } from "sonner"
+import { Progress } from "@/components/ui/progress";
+
 
 const QuestionPage = () => {
     const stats = loadStats();
@@ -13,18 +16,26 @@ const QuestionPage = () => {
     const [question, setQuestion] = useState<Question | undefined>(undefined);
     const { data: members } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState(stats);
-    const [xpToNextLevel, setXpToNextLevel] = useState(getTotalXPForLevel(stats.level + 1));
+    const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
+    const levels = useMemo(() => {
+        return {
+            currentLevelXP: getTotalXPForLevel(playrsStatus.level),
+            nextLevelXP: getTotalXPForLevel(playrsStatus.level + 1),
+        }
+    }, [stats.level])
+
     useEffect(() => {
         newQuestion();
     }, [members]);
-    useEffect(() => { console.log(playrsStatus) }, [playrsStatus])
+
+
     function newQuestion() {
         if (!members)
             return;
         const q = GetQuestion(members);
         setQuestion(q);
         setWrongAnswers([]);
-
+        setQuestionStartTime(new Date());
     }
 
     // preload images
@@ -54,22 +65,28 @@ const QuestionPage = () => {
         if (correct) {
             points -= (wrongAnswers.length) * 3;
         }
-        const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points } : { basePoints: -6, penalizeStreak: true });
-        console.log(`Gained ${xpGained} XP`);
+        const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
+        console.log(`Response time: ${responseTimeSec.toFixed(2)} sec`);
+        const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: -6, penalizeStreak: true });
+        if (xpGained > 0) {
+            toast.success(`נכון! הרווחת ${xpGained} נקודות`, { duration: 3000, position: "top-center" });
+        } else {
+            toast.error(`לא נכון! הפסדת ${xpGained * -1} נקודות`, { duration: 3000, position: "top-center" });
+        }
         setPlayerStatus(newStatus);
-        setXpToNextLevel(getTotalXPForLevel(newStatus.level + 1));
+
         if (wrongAnswers.length >= 3 || correct)
             newQuestion();
     }
     if (!members || !question)
         return <div className="flex h-full justify-center items-center text-2xl font-semibold">מחכה לחברים..</div>;
     return (
-        <div className="flex flex-col p-4 h-full justify-center">
-            <div className="flex justify-between text-center text-xl font-semibold mb-8">
+        <div className="flex flex-col p-4 h-full justify-center gap-4">
+            <div className="flex justify-between text-center text-xl font-semibold">
                 <div className="flex gap-2">
                     <StarIcon className="text-amber-400" fill="var(--color-amber-400)" />
                     {playrsStatus.xp.toLocaleString()}
-                    <span className="text-gray-500">/ {xpToNextLevel.toLocaleString()}</span>
+                    <span className="text-gray-500">/ {levels.nextLevelXP.toLocaleString()}</span>
                 </div>
 
                 <div className="flex flex-col items-center">
@@ -82,7 +99,10 @@ const QuestionPage = () => {
                     </div>
                 </div>
             </div>
+            <div>
+                <Progress value={(stats.xp - levels.currentLevelXP) / (levels.nextLevelXP - levels.currentLevelXP) * 100} />
 
+            </div>
             <div className="mx-auto">
                 <Avatar className="size-72">
                     <AvatarImage src={question.answer.imageUrl} className="object-cover " alt="User Avatar" />
@@ -90,12 +110,11 @@ const QuestionPage = () => {
                 </Avatar>
             </div>
             <div className="grow">
-
             </div>
             <div className="grid gap-2">
                 {question.options.map((option) => (
                     <div key={option.id} className={cn("flex", { "gap-4": wrongAnswers.includes(option.id) })}>
-                        <Button className={cn( "flex h-16 opacity-100 grow transition-all", { shake: wrongAnswers.includes(option.id) })} onClick={() => answer(option.id)} disabled={wrongAnswers.includes(option.id)}>
+                        <Button className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-16 opacity-100 grow transition-all", { shake: wrongAnswers.includes(option.id) })} onClick={() => answer(option.id)} disabled={wrongAnswers.includes(option.id)}>
                             <span>
                                 {option.firstName} {option.lastName}
                             </span>
