@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { getLevelName, getTotalXPForLevel, loadStats, updateStats } from "@/services/statsService";
-import { useEffect, useMemo, useState } from "react";
-import { GraduationCap, StarIcon } from "lucide-react"
+import { use, useEffect, useMemo, useRef, useState } from "react";
+import { GraduationCap, StarIcon, ZapIcon } from "lucide-react"
 import { Progress } from "@/components/ui/progress";
-
+import { Fireworks } from '@fireworks-js/react'
+import type { FireworksHandlers } from '@fireworks-js/react'
+import FireworksComponent from "@/components/FireworksComponent";
 
 interface FloatingNumber {
     id: number;
@@ -18,6 +20,8 @@ interface FloatingNumber {
 
 const QuestionPage = () => {
     const stats = loadStats();
+    const fireworksRef = useRef<FireworksHandlers>(null)
+    const [showFireworks, setShowFireworks] = useState(true);
     const [wrongAnswers, setWrongAnswers] = useState<number[]>([]);
     const [numbers, setNumbers] = useState<FloatingNumber[]>([]);
 
@@ -31,6 +35,11 @@ const QuestionPage = () => {
             nextLevelXP: getTotalXPForLevel(playrsStatus.level + 1),
         }
     }, [stats.level])
+
+    useEffect(() => {
+        if (fireworksRef.current)
+            fireworksRef.current.stop();
+    }, [fireworksRef.current])
 
 
     const showScore = (e: React.MouseEvent, value: number) => {
@@ -98,32 +107,40 @@ const QuestionPage = () => {
         } else {
             points *= -1;
         }
-        console.log(`Points before time bonus: ${points} ${wrongAnswers.length} wrong answers`);
         const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
         const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: points, penalizeStreak: true });
+        if (newStatus.level > stats.level) {
+            setShowFireworks(true);
+            setTimeout(() => {
+                setShowFireworks(false);
+            }, 5000);
+        }
         if (xpGained > 0) {
             showScore(e, xpGained);
         } else {
             showScore(e, xpGained);
         }
         setPlayerStatus(newStatus);
-
         if (wrongAnswers.length >= 3 || correct)
             newQuestion();
     }
+
     if (!members || !question)
         return <div className="flex h-full justify-center items-center text-2xl font-semibold">מחכה לחברים..</div>;
 
     return (
         <div className="flex flex-col p-4 h-full justify-center gap-4">
-            <div className="flex justify-between text-center text-xl font-semibold">
+            <div className="grid grid-cols-3 items-center justify-center text-center text-xl font-semibold ">
                 <div className="flex gap-2">
                     <StarIcon className="" fill="var(--color-amber-400)" />
                     {playrsStatus.xp.toLocaleString()}
                     <span className="text-gray-500">/ {levels.nextLevelXP.toLocaleString()}</span>
                 </div>
-
-                <div className="flex flex-col items-center">
+                <div className="flex gap-1 mx-auto">
+                    <ZapIcon fill="var(--color-amber-400)" />
+                    {stats.streak}
+                </div>
+                <div className="flex flex-col items-end mr-0">
                     <div className="flex gap-2 items-center">
                         <GraduationCap />
                         {playrsStatus.level.toLocaleString()}
@@ -174,12 +191,15 @@ const QuestionPage = () => {
                     style={{ left: num.x, top: num.y }}
                     onAnimationEnd={() => handleAnimationEnd(num.id)}
                 >
-                    <span className="size-4 font-semibold rounded-full">
-                    {num.value > 0 ? `+${num.value}` : num.value}
+                    <span className="size-4 font-bold rounded-full">
+                        {num.value > 0 ? `+${num.value}` : num.value}
                     </span>
                 </div>
             ))}
+              {showFireworks && <FireworksComponent className="fixed -z-50 h-screen w-screen"/>}
+          
         </div>
+
     );
 }
 export { QuestionPage }
