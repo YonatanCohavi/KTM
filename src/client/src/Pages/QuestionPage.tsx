@@ -5,10 +5,11 @@ import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { getLevelName, getTotalXPForLevel, loadStats, updateStats } from "@/services/statsService";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BabyIcon, BookIcon, BookOpenIcon, BrainIcon, GraduationCapIcon, LightbulbIcon, MicroscopeIcon, PuzzleIcon, RocketIcon, StarIcon, ZapIcon } from "lucide-react"
+import { StarIcon, ZapIcon } from "lucide-react"
 import { Progress } from "@/components/ui/progress";
 import type { FireworksHandlers } from '@fireworks-js/react'
 import FireworksComponent from "@/components/FireworksComponent";
+import { LevelIcon } from "@/components/LevelIcon";
 
 interface FloatingNumber {
     id: number;
@@ -16,18 +17,7 @@ interface FloatingNumber {
     y: number;
     value: number;
 }
-const tierIcons = [
-    <BabyIcon />,
-    <BookOpenIcon />,
-    <LightbulbIcon />,
-    <PuzzleIcon />,
-    <BrainIcon />,
-    <MicroscopeIcon />,
-    <BookIcon />,
-    <GraduationCapIcon />,
-    <ZapIcon />,
-    <RocketIcon />,
-]
+
 const QuestionPage = () => {
     const stats = loadStats();
     const fireworksRef = useRef<FireworksHandlers>(null)
@@ -157,7 +147,7 @@ const QuestionPage = () => {
                 </div>
                 <div className="flex flex-col items-end mr-0">
                     <div className="flex gap-2 items-center">
-                        {tierIcons[Math.min(tierIcons.length - 1, Math.floor(stats.level / 10))]}
+                        <LevelIcon level={stats.level} />
                         {playrsStatus.level.toLocaleString()}
                     </div>
                     <div>
@@ -167,7 +157,6 @@ const QuestionPage = () => {
             </div>
             <div>
                 <Progress value={(stats.xp - levels.currentLevelXP) / (levels.nextLevelXP - levels.currentLevelXP) * 100} />
-
             </div>
             <div className="mx-auto grow flex items-center h-full">
                 <Avatar className="size-72">
