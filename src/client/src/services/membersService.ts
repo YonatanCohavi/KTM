@@ -16,6 +16,7 @@ export function useMembersQuery() {
         queryKey: ["members"],
         queryFn: async () => {
             return await knessetApi.getmembers();
-        }
+        },
+        refetchOnWindowFocus: false
     })
 }

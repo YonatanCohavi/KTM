@@ -19,7 +19,18 @@ interface FloatingNumber {
 }
 
 const QuestionPage = () => {
-    const stats = loadStats();
+    useEffect(() => {
+        const handleFocus = () => {
+            setPlayerStatus(loadStats());
+        };
+
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, []);
+
     const fireworksRef = useRef<FireworksHandlers>(null)
     const [showFireworks, setShowFireworks] = useState(false);
     const [wrongAnswers, setWrongAnswers] = useState<number[]>([]);
@@ -27,14 +38,14 @@ const QuestionPage = () => {
 
     const [question, setQuestion] = useState<Question | undefined>(undefined);
     const { data: members } = useMembersQuery();
-    const [playrsStatus, setPlayerStatus] = useState(stats);
+    const [playrsStatus, setPlayerStatus] = useState(loadStats());
     const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
     const levels = useMemo(() => {
         return {
             currentLevelXP: getTotalXPForLevel(playrsStatus.level),
             nextLevelXP: getTotalXPForLevel(playrsStatus.level + 1),
         }
-    }, [stats.level])
+    }, [playrsStatus.level])
 
     useEffect(() => {
         if (fireworksRef.current)
@@ -114,7 +125,7 @@ const QuestionPage = () => {
         }
         const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
         const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: points, penalizeStreak: true });
-        if (newStatus.level > stats.level) {
+        if (newStatus.level > playrsStatus.level) {
             setShowFireworks(true);
             setTimeout(() => {
                 setShowFireworks(false);
@@ -143,11 +154,11 @@ const QuestionPage = () => {
                 </div>
                 <div className="flex gap-1 mx-auto">
                     <ZapIcon fill="var(--color-amber-400)" />
-                    {stats.streak}
+                    {playrsStatus.streak}
                 </div>
                 <div className="flex flex-col items-end mr-0">
                     <div className="flex gap-2 items-center">
-                        <LevelIcon level={stats.level} />
+                        <LevelIcon level={playrsStatus.level} />
                         {playrsStatus.level.toLocaleString()}
                     </div>
                     <div>
@@ -156,7 +167,7 @@ const QuestionPage = () => {
                 </div>
             </div>
             <div>
-                <Progress value={(stats.xp - levels.currentLevelXP) / (levels.nextLevelXP - levels.currentLevelXP) * 100} />
+                <Progress value={(playrsStatus.xp - levels.currentLevelXP) / (levels.nextLevelXP - levels.currentLevelXP) * 100} />
             </div>
             <div className="mx-auto grow flex items-center h-full">
                 <Avatar className="size-72">
