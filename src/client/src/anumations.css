@@ -26,3 +26,19 @@
   pointer-events: none;
   animation: floatUp 1.2s forwards;
 }
+
+@keyframes musical-chairs {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.waiting-chairs {
+  animation: musical-chairs 1.5s ease-in-out infinite;
+}

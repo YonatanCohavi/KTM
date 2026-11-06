@@ -159,7 +159,10 @@ const QuestionPage = () => {
         </div>;
 
     if (!members || !question)
-        return <div className="flex h-full justify-center items-center text-2xl font-semibold">מחכה לחברים..</div>;
+        return <div className="flex h-full flex-col justify-center items-center gap-1.5 waiting-chairs">
+            <div className="text-5xl ">🪑 🪑 🪑</div>
+            <p className="text-2xl font-semibold">מחכה לחברים..</p>
+        </div>;
 
     return (
         <div className="mx-auto flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4 lg:max-w-3xl lg:px-8 xl:gap-6 xl:py-6">
