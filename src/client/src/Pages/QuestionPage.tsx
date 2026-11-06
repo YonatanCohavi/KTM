@@ -155,36 +155,29 @@ const QuestionPage = () => {
         return <div className="flex h-full justify-center items-center text-2xl font-semibold">מחכה לחברים..</div>;
 
     return (
-        <div className="flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4">
+        <div className="mx-auto flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4 lg:max-w-3xl lg:px-8 xl:gap-6 xl:py-6">
             <PlayerStatsHeader xp={playrsStatus.xp} level={playrsStatus.level} streak={playrsStatus.streak} />
             <TimeBonusMeter elapsedSeconds={elapsedSeconds} />
-            <div className="flex min-h-0 flex-1 items-center justify-center">
+            <div className="@container-[size] flex min-h-0 flex-1 items-center justify-center">
                 <Avatar
-                    className="shrink-0"
-                    style={{
-                        width: "auto",
-                        height: "100%",
-                        aspectRatio: "1 / 1",
-                        maxHeight: "min(34dvh, 18rem)",
-                        maxWidth: "min(70vw, 18rem)"
-                    }}
+                    className="aspect-square h-auto w-[min(100cqh,100cqw)] max-w-64 shrink-0 lg:max-w-80"
                 >
                     <AvatarImage src={question.answer.imageUrl} className="object-cover " alt="User Avatar" />
                     <AvatarFallback></AvatarFallback>
                 </Avatar>
             </div>
             {/* <div className="grow"/> */}
-            <div className="grid shrink-0 gap-1 sm:gap-2">
+            <div className="grid shrink-0 gap-1 sm:gap-2 lg:grid-cols-2 lg:gap-3">
                 {question.options.map((option) => (
-                    <div key={option.id} className={cn("flex", { "gap-4": wrongAnswers.includes(option.id) })}>
+                    <div key={option.id} className={cn("flex min-w-0", { "gap-4": wrongAnswers.includes(option.id) })}>
                         <Button
-                            className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-11 grow opacity-100 transition-all sm:h-16", { shake: wrongAnswers.includes(option.id) })}
+                            className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-11 min-w-0 grow opacity-100 transition-all sm:h-16 lg:justify-center lg:text-lg xl:h-20", { shake: wrongAnswers.includes(option.id) })}
                             onClick={(e) => answer(e, option.id)}
                             disabled={wrongAnswers.includes(option.id)}>
-                            <span>
+                            <span className="min-w-0 whitespace-normal wrap-break-word">
                                 {option.firstName} {option.lastName}
                             </span>
-                            <div className="grow"></div>
+                            <div className="grow lg:hidden"></div>
                         </Button>
                         <div className={cn("w-0 overflow-hidden transition-all", { "w-10": wrongAnswers.includes(option.id) })}>
                             <Avatar className="my-auto size-8 sm:size-10">
