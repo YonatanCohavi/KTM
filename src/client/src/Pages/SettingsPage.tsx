@@ -1,7 +1,7 @@
-import { useRef, useState } from "react";
-import { RotateCcw, Settings, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resetStats } from "@/services/statsService";
+import { Settings, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
 
 export function SettingsPage({ onRestart }: { onRestart: () => void }) {
     const confirmation = useRef<HTMLDialogElement>(null);
@@ -41,7 +41,7 @@ export function SettingsPage({ onRestart }: { onRestart: () => void }) {
             {error && <p role="alert" className="mb-4 text-sm text-destructive">{error}</p>}
             <div className="flex flex-wrap gap-3">
                 <Button autoFocus variant="outline" onClick={() => confirmation.current?.close()}>ביטול</Button>
-                <Button variant="destructive" className="h-auto min-h-10 whitespace-normal" onClick={restartGame}><RotateCcw className="shrink-0" />מחיקה והתחלה מחדש</Button>
+                <Button variant="destructive" className="h-auto min-h-10 whitespace-normal" onClick={restartGame}><Trash2 className="shrink-0" />מחיקה והתחלה מחדש</Button>
             </div>
         </dialog>
     </section>;
