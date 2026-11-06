@@ -8,6 +8,7 @@ import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { loadStats, updateStats } from "@/services/statsService";
 import type { FireworksHandlers } from '@fireworks-js/react';
+import { LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface FloatingNumber {
@@ -38,10 +39,13 @@ const QuestionPage = () => {
     const [question, setQuestion] = useState<Question | undefined>(undefined);
     const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState(loadStats());
-    const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
+    const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
+    const [imageError, setImageError] = useState(false);
+    const [imageAttempt, setImageAttempt] = useState(0);
 
     useEffect(() => {
+        if (!questionStartTime) return;
         const updateElapsedTime = () => {
             setElapsedSeconds((Date.now() - questionStartTime.getTime()) / 1000);
         };
@@ -88,7 +92,10 @@ const QuestionPage = () => {
         const q = GetQuestion(members, exclude);
         setQuestion(q);
         setWrongAnswers([]);
-        setQuestionStartTime(new Date());
+        setQuestionStartTime(null);
+        setElapsedSeconds(0);
+        setImageError(false);
+        setImageAttempt(0);
     }
 
     // preload images
@@ -102,7 +109,7 @@ const QuestionPage = () => {
     }, [question]);
 
     function answer(e: React.MouseEvent, optionId: number) {
-        if (!question)
+        if (!question || !questionStartTime)
             return;
 
         let correct = true;
@@ -160,10 +167,30 @@ const QuestionPage = () => {
             <TimeBonusMeter elapsedSeconds={elapsedSeconds} />
             <div className="@container-[size] flex min-h-0 flex-1 items-center justify-center">
                 <Avatar
+                    key={`${question.answer.id}-${imageAttempt}`}
                     className="aspect-square h-auto w-[min(100cqh,100cqw)] max-w-64 shrink-0 lg:max-w-80"
                 >
-                    <AvatarImage src={question.answer.imageUrl} className="object-cover " alt="User Avatar" />
-                    <AvatarFallback></AvatarFallback>
+                    <AvatarImage src={question.answer.imageUrl} className="object-cover " alt="User Avatar"
+                        onLoad={() => setQuestionStartTime(startTime => startTime ?? new Date())}
+                        onLoadingStatusChange={status => {
+                            if (status === "error") {
+                                setImageError(true);
+                                setQuestionStartTime(null);
+                                setElapsedSeconds(0);
+                            }
+                        }}
+                    />
+                    <AvatarFallback>
+                        {imageError ? <div className="flex flex-col items-center gap-3 px-4 text-center">
+                            <p role="alert" className="text-sm">לא הצלחנו לטעון את התמונה.</p>
+                            <Button variant="outline" onClick={() => {
+                                setImageError(false);
+                                setImageAttempt(attempt => attempt + 1);
+                            }}><RotateCcw />נסו שוב</Button>
+                        </div> : <span role="status" className="flex flex-col items-center gap-2 text-sm">
+                            <LoaderCircle className="size-6 animate-spin" aria-hidden="true" />טוען תמונה...
+                        </span>}
+                    </AvatarFallback>
                 </Avatar>
             </div>
             {/* <div className="grow"/> */}
@@ -173,7 +200,7 @@ const QuestionPage = () => {
                         <Button
                             className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-11 min-w-0 grow opacity-100 transition-all sm:h-16 lg:justify-center lg:text-lg xl:h-20", { shake: wrongAnswers.includes(option.id) })}
                             onClick={(e) => answer(e, option.id)}
-                            disabled={wrongAnswers.includes(option.id)}>
+                            disabled={!questionStartTime || wrongAnswers.includes(option.id)}>
                             <span className="min-w-0 whitespace-normal wrap-break-word">
                                 {option.firstName} {option.lastName}
                             </span>
