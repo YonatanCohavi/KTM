@@ -1,7 +1,7 @@
 import { LevelIcon } from "@/components/LevelIcon";
 import { Progress } from "@/components/ui/progress";
 import { getLevelName, getTotalXPForLevel } from "@/services/statsService";
-import { StarIcon, ZapIcon } from "lucide-react";
+import { Flame, Trophy } from "lucide-react";
 
 interface PlayerStatsHeaderProps {
     xp: number;
@@ -16,23 +16,28 @@ const PlayerStatsHeader = ({ xp, level, streak }: PlayerStatsHeaderProps) => {
 
     return (
         <div className="shrink-0 space-y-2">
-            <div className="grid grid-cols-[auto_1fr_auto] items-center justify-center text-center text-base font-semibold sm:text-xl">
-                <div className="flex gap-2 whitespace-nowrap">
-                    <StarIcon className="size-5 sm:size-6" fill="var(--color-amber-400)" />
-                    {xp.toLocaleString()}
-                    <span className="text-gray-500">/ {nextLevelXP.toLocaleString()}</span>
-                </div>
-                <div className="mx-auto flex gap-1">
-                    <ZapIcon className="size-5 sm:size-6" fill="var(--color-amber-400)" />
-                    {streak}
-                </div>
-                <div className="mr-0 flex flex-col items-end">
-                    <div className="flex items-center gap-2">
-                        <LevelIcon level={level} />
-                        {level.toLocaleString()}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3 text-base font-semibold sm:text-xl">
+                <div className="flex min-w-0 flex-col items-start gap-1" title="ניקוד">
+                    <span className="text-sm font-medium text-muted-foreground">ניקוד</span>
+                    <div className="flex min-h-7 flex-wrap items-center gap-2">
+                        <Trophy className="size-5 shrink-0" aria-hidden="true" />
+                        <bdi dir="ltr" className="whitespace-nowrap tabular-nums">
+                            {xp.toLocaleString()}<span className="text-sm font-normal text-muted-foreground"> / {nextLevelXP.toLocaleString()}</span>
+                        </bdi>
                     </div>
-                    <div>
-                        <span className="text-sm font-medium text-gray-500">{getLevelName(level)}</span>
+                </div>
+                <div className="flex flex-col items-center gap-1" title="רצף תשובות">
+                    <span className="text-sm font-medium text-muted-foreground">רצף</span>
+                    <div className="flex min-h-7 items-center gap-2">
+                        <Flame className="size-5 shrink-0" aria-hidden="true" />
+                        <span className="tabular-nums">{streak.toLocaleString()}</span>
+                    </div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                        <span className="text-sm font-medium text-muted-foreground">{getLevelName(level)}</span>
+                    <div className="flex min-h-7 items-center gap-2">
+                        <LevelIcon level={level} size={20} />
+                        <span className="tabular-nums">{level.toLocaleString()}</span>
                     </div>
                 </div>
             </div>
