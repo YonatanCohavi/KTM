@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
-import { getLevelName, getTotalXPForLevel, loadStats, updateStats } from "@/services/statsService";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { StarIcon, ZapIcon } from "lucide-react"
-import { Progress } from "@/components/ui/progress";
+import { loadStats, updateStats } from "@/services/statsService";
+import { TimeBonusMeter } from "@/components/TimeBonusMeter";
+import { PlayerStatsHeader } from "@/components/PlayerStatsHeader";
+import { useEffect, useRef, useState } from "react";
 import type { FireworksHandlers } from '@fireworks-js/react'
 import FireworksComponent from "@/components/FireworksComponent";
-import { LevelIcon } from "@/components/LevelIcon";
 
 interface FloatingNumber {
     id: number;
@@ -40,13 +39,16 @@ const QuestionPage = () => {
     const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState(loadStats());
     const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
-    
-    const levels = useMemo(() => {
-        return {
-            currentLevelXP: getTotalXPForLevel(playrsStatus.level),
-            nextLevelXP: getTotalXPForLevel(playrsStatus.level + 1),
-        }
-    }, [playrsStatus.level])
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    useEffect(() => {
+        const updateElapsedTime = () => {
+            setElapsedSeconds((Date.now() - questionStartTime.getTime()) / 1000);
+        };
+        updateElapsedTime();
+        const intervalId = window.setInterval(updateElapsedTime, 100);
+        return () => window.clearInterval(intervalId);
+    }, [questionStartTime]);
 
     useEffect(() => {
         if (fireworksRef.current)
@@ -153,42 +155,30 @@ const QuestionPage = () => {
         return <div className="flex h-full justify-center items-center text-2xl font-semibold">מחכה לחברים..</div>;
 
     return (
-        <div className="flex flex-col p-4 h-full justify-center gap-4">
-            <div className="grid grid-cols-[auto_1fr_auto] items-center justify-center text-center text-xl font-semibold ">
-                <div className="flex gap-2 whitespace-nowrap">
-                    <StarIcon className="" fill="var(--color-amber-400)" />
-                    {playrsStatus.xp.toLocaleString()}
-                    <span className="text-gray-500">/ {levels.nextLevelXP.toLocaleString()}</span>
-                </div>
-                <div className="flex gap-1 mx-auto">
-                    <ZapIcon fill="var(--color-amber-400)" />
-                    {playrsStatus.streak}
-                </div>
-                <div className="flex flex-col items-end mr-0">
-                    <div className="flex gap-2 items-center">
-                        <LevelIcon level={playrsStatus.level} />
-                        {playrsStatus.level.toLocaleString()}
-                    </div>
-                    <div>
-                        <span className="text-gray-500 font-medium text-sm">{getLevelName(playrsStatus.level)}</span>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <Progress value={(playrsStatus.xp - levels.currentLevelXP) / (levels.nextLevelXP - levels.currentLevelXP) * 100} />
-            </div>
-            <div className="mx-auto grow flex items-center h-full">
-                <Avatar className="size-72">
+        <div className="flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4">
+            <PlayerStatsHeader xp={playrsStatus.xp} level={playrsStatus.level} streak={playrsStatus.streak} />
+            <TimeBonusMeter elapsedSeconds={elapsedSeconds} />
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+                <Avatar
+                    className="shrink-0"
+                    style={{
+                        width: "auto",
+                        height: "100%",
+                        aspectRatio: "1 / 1",
+                        maxHeight: "min(34dvh, 18rem)",
+                        maxWidth: "min(70vw, 18rem)"
+                    }}
+                >
                     <AvatarImage src={question.answer.imageUrl} className="object-cover " alt="User Avatar" />
                     <AvatarFallback></AvatarFallback>
                 </Avatar>
             </div>
             {/* <div className="grow"/> */}
-            <div className="grid gap-2">
+            <div className="grid shrink-0 gap-1 sm:gap-2">
                 {question.options.map((option) => (
                     <div key={option.id} className={cn("flex", { "gap-4": wrongAnswers.includes(option.id) })}>
                         <Button
-                            className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-16 opacity-100 grow transition-all", { shake: wrongAnswers.includes(option.id) })}
+                            className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-11 grow opacity-100 transition-all sm:h-16", { shake: wrongAnswers.includes(option.id) })}
                             onClick={(e) => answer(e, option.id)}
                             disabled={wrongAnswers.includes(option.id)}>
                             <span>
@@ -197,7 +187,7 @@ const QuestionPage = () => {
                             <div className="grow"></div>
                         </Button>
                         <div className={cn("w-0 overflow-hidden transition-all", { "w-10": wrongAnswers.includes(option.id) })}>
-                            <Avatar className="size-10 mt-4 mx-auto">
+                            <Avatar className="my-auto size-8 sm:size-10">
                                 <AvatarImage src={option.imageUrl} alt="User Avatar" className="object-cover" />
                                 <AvatarFallback></AvatarFallback>
                             </Avatar>

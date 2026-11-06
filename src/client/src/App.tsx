@@ -26,19 +26,19 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <UserContextProvider>
-        <div className="flex  flex-col mx-auto h-screen" >
+        <div className="mx-auto flex h-dvh flex-col overflow-hidden">
           {/* // Toolbar */}
-          <div className="flex bg-primary text-background p-4 shadow  justify-around items-center gap-4">
+          <div className="flex shrink-0 items-center justify-around gap-2 bg-primary p-2 text-background shadow sm:gap-4 sm:p-4">
             <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center">
-              <img src={logo} alt="Logo" className="h-10" />
+              <img src={logo} alt="Logo" className="h-8 sm:h-10" />
             </div>
-            <div className="font-semibold text-xl">הכר את החבר</div>
+            <div className="text-lg font-semibold sm:text-xl">הכר את החבר</div>
             <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center">
-              <img src={logo} alt="Logo" className="h-10" />
+              <img src={logo} alt="Logo" className="h-8 sm:h-10" />
             </div>
           </div>
           {/* Main content */}
-          <div className="container mx-auto grow h-full">
+          <div className="container mx-auto min-h-0 flex-1">
             <QuestionPage />
           </div>
         </div>

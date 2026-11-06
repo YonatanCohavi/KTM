@@ -145,7 +145,7 @@ export function updateStats(
   };
 }
 
-function getTimeBonusMultiplier(responseTimeSec?: number): number {
+export function getTimeBonusMultiplier(responseTimeSec?: number): number {
   if (responseTimeSec === undefined) return 1;
   if (responseTimeSec <= 2) return 1.3;  // +30%
   if (responseTimeSec <= 5) return 1.15; // +15%
