@@ -37,7 +37,7 @@ const QuestionPage = () => {
     const [numbers, setNumbers] = useState<FloatingNumber[]>([]);
 
     const [question, setQuestion] = useState<Question | undefined>(undefined);
-    const { data: members } = useMembersQuery();
+    const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState(loadStats());
     const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
     const levels = useMemo(() => {
@@ -116,7 +116,8 @@ const QuestionPage = () => {
 
         // did not know both members
         setAnswer(optionId, correct);
-        setAnswer(question.answer.id, correct);
+        if (!correct)
+            setAnswer(question.answer.id, false);
 
         if (correct) {
             points -= (wrongAnswers.length) * 3;
@@ -140,6 +141,12 @@ const QuestionPage = () => {
         if (wrongAnswers.length >= 3 || correct)
             newQuestion();
     }
+
+    if (membersError)
+        return <div className="flex h-full flex-col justify-center items-center gap-4 text-xl font-semibold">
+            <p>לא הצלחנו לטעון את נתוני החברים.</p>
+            <Button onClick={() => { void refetchMembers(); }}>נסו שוב</Button>
+        </div>;
 
     if (!members || !question)
         return <div className="flex h-full justify-center items-center text-2xl font-semibold">מחכה לחברים..</div>;
