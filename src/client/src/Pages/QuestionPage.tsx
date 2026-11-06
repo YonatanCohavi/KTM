@@ -1,14 +1,14 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import FireworksComponent from "@/components/FireworksComponent";
+import { PlayerStatsHeader } from "@/components/PlayerStatsHeader";
+import { TimeBonusMeter } from "@/components/TimeBonusMeter";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { loadStats, updateStats } from "@/services/statsService";
-import { TimeBonusMeter } from "@/components/TimeBonusMeter";
-import { PlayerStatsHeader } from "@/components/PlayerStatsHeader";
+import type { FireworksHandlers } from '@fireworks-js/react';
 import { useEffect, useRef, useState } from "react";
-import type { FireworksHandlers } from '@fireworks-js/react'
-import FireworksComponent from "@/components/FireworksComponent";
 
 interface FloatingNumber {
     id: number;
@@ -214,4 +214,4 @@ const QuestionPage = () => {
 
     );
 }
-export { QuestionPage }
+export { QuestionPage };

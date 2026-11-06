@@ -64,6 +64,19 @@ export function setAnswer(id: number, isCorrect: boolean) {
     localStorage.setItem("memberWeights", JSON.stringify(updatedWeights));
 }
 
+export function loadMemberKnowledge(): Map<number, number> {
+    try {
+        const stored = z.array(weightSchema).safeParse(JSON.parse(localStorage.getItem("memberWeights") ?? "[]"));
+        if (!stored.success) return new Map();
+        return new Map(stored.data.map(member => [
+            member.id,
+            Math.round(Math.max(0, Math.min(1, 1 - member.weight)) * 100)
+        ]));
+    } catch {
+        return new Map();
+    }
+}
+
 function pickWeight(weights: weight[], gender?: number, exclude: number[] = []): weight {
     const filtered = weights.filter(m => !exclude.includes(m.id) && (!gender ? true : m.genderCode == gender));
     const totalWeight = filtered.reduce((sum, q) => sum + q.weight, 0);
