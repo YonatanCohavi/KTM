@@ -20,11 +20,11 @@ export function SettingsPage({ onRestart }: { onRestart: () => void }) {
         onRestart();
     }
 
-    return <section className="h-full overflow-y-auto px-3 py-4 sm:p-6" aria-labelledby="settings-heading" dir="rtl">
+    return <section className="h-full overflow-y-auto px-3 py-4 sm:p-6 lg:max-w-2xl lg:mx-auto" aria-labelledby="settings-heading" dir="rtl">
         <h1 id="settings-heading" className="mb-6 flex items-center gap-2 text-2xl font-semibold"><Settings className="size-6" />הגדרות</h1>
         <div className="flex flex-col items-start gap-4 border-y py-6">
             <h2 className="text-lg font-semibold">נתוני המשחק</h2>
-            <p className="max-w-xl text-sm text-muted-foreground">האיפוס ימחק את הניקוד, הרמה, רצף התשובות, רמות ההיכרות ומזהה המשתמש השמורים בדפדפן הזה.</p>
+            <p className="max-w-2xl text-sm text-muted-foreground">האיפוס ימחק את הניקוד, הרמה, רצף התשובות, רמות ההיכרות ומזהה המשתמש השמורים בדפדפן הזה.</p>
             <Button variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
                 setError("");
                 confirmation.current?.showModal();
