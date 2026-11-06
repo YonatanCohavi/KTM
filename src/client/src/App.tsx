@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useRef, useState, useSyncExternalStore } from "react"
-import { Gamepad2, Menu, Settings, Users, X } from "lucide-react"
+import { Gamepad2, Menu, Settings, Trophy, Users, X } from "lucide-react"
 
 import { QuestionPage } from "./Pages/QuestionPage"
 import { MembersPage } from "./Pages/MembersPage"
 import { SettingsPage } from "./Pages/SettingsPage"
+import { LeaderboardPage } from "./Pages/LeaderboardPage"
 import logo from "./assets/logo.png"
 import { UserContextProvider } from "./contexts/userContext"
 import { cn } from "./lib/utils"
@@ -26,6 +27,7 @@ function App() {
   const [sessionVersion, setSessionVersion] = useState(0)
   const page = useSyncExternalStore(subscribeToNavigation, () => {
     if (window.location.hash === "#/members") return "members"
+    if (window.location.hash === "#/leaderboard") return "leaderboard"
     if (window.location.hash === "#/settings") return "settings"
     return "quiz"
   })
@@ -72,6 +74,9 @@ function App() {
               <a href="#/" onClick={() => navigationDrawer.current?.close()} aria-current={page === "quiz" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "quiz" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
                 <Gamepad2 className="size-4" />משחק
               </a>
+              <a href="#/leaderboard" onClick={() => navigationDrawer.current?.close()} aria-current={page === "leaderboard" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "leaderboard" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
+                <Trophy className="size-4" />דירוג
+              </a>
               <a href="#/members" onClick={() => navigationDrawer.current?.close()} aria-current={page === "members" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "members" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
                 <Users className="size-4" />כל החברים
               </a>
@@ -82,7 +87,7 @@ function App() {
           </dialog>
           {/* Main content */}
           <div className="container mx-auto min-h-0 flex-1">
-            {page === "members" ? <MembersPage /> : page === "settings" ? <SettingsPage onRestart={() => {
+            {page === "members" ? <MembersPage /> : page === "leaderboard" ? <LeaderboardPage /> : page === "settings" ? <SettingsPage onRestart={() => {
               window.location.hash = "#/"
               setSessionVersion(version => version + 1)
             }} /> : <QuestionPage />}

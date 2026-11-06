@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { useMembersQuery } from "@/services/membersService";
 import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
 import { loadStats, updateStats } from "@/services/statsService";
+import { syncPlayerToLeaderboard } from "@/services/leaderboardService";
+import { useUser } from "@/contexts/userContext";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -19,6 +21,8 @@ interface FloatingNumber {
 }
 
 const QuestionPage = () => {
+    const { id: browserUUID, name: playerName } = useUser();
+    
     useEffect(() => {
         const handleFocus = () => {
             setPlayerStatus(loadStats());
@@ -148,6 +152,9 @@ const QuestionPage = () => {
             showScore(e, xpGained);
         }
         setPlayerStatus(newStatus);
+        
+        // Sync to leaderboard (async, doesn't block UI)
+        void syncPlayerToLeaderboard(browserUUID, playerName, newStatus.level, newStatus.xp, newStatus.streak);
         if (wrongAnswers.length >= 3 || correct)
             newQuestion();
     }
