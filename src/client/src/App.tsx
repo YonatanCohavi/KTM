@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { useSyncExternalStore } from "react"
-import { Gamepad2, Users } from "lucide-react"
+import { useRef, useState, useSyncExternalStore } from "react"
+import { Gamepad2, Menu, Settings, Users, X } from "lucide-react"
 
 import { QuestionPage } from "./Pages/QuestionPage"
 import { MembersPage } from "./Pages/MembersPage"
+import { SettingsPage } from "./Pages/SettingsPage"
 import logo from "./assets/logo.png"
 import { UserContextProvider } from "./contexts/userContext"
 import { cn } from "./lib/utils"
@@ -21,7 +22,13 @@ function subscribeToNavigation(onChange: () => void) {
 }
 
 function App() {
-  const page = useSyncExternalStore(subscribeToNavigation, () => window.location.hash === "#/members" ? "members" : "quiz")
+  const navigationDrawer = useRef<HTMLDialogElement>(null)
+  const [sessionVersion, setSessionVersion] = useState(0)
+  const page = useSyncExternalStore(subscribeToNavigation, () => {
+    if (window.location.hash === "#/members") return "members"
+    if (window.location.hash === "#/settings") return "settings"
+    return "quiz"
+  })
   //  useEffect(() => {
   //   const handleFocus = () => {
   //     window.location.reload();
@@ -35,29 +42,50 @@ function App() {
   // }, []);
   return (
     <QueryClientProvider client={queryClient}>
-      <UserContextProvider>
+      <UserContextProvider key={sessionVersion}>
         <div className="mx-auto flex h-dvh flex-col overflow-hidden">
           {/* // Toolbar */}
           <div className="flex shrink-0 items-center justify-around gap-2 bg-primary p-2 text-background shadow sm:gap-4 sm:p-4">
-            <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center">
-              <img src={logo} alt="Logo" className="h-8 sm:h-10" />
-            </div>
+            <button type="button" aria-label="פתיחת תפריט ניווט" title="פתיחת תפריט ניווט" aria-haspopup="dialog" aria-controls="navigation-drawer" onClick={() => navigationDrawer.current?.showModal()} className="flex size-10 items-center justify-center rounded-md hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-ring">
+              <Menu className="size-6" />
+            </button>
             <div className="text-lg font-semibold sm:text-xl">הכר את החבר</div>
             <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center">
               <img src={logo} alt="Logo" className="h-8 sm:h-10" />
             </div>
           </div>
-          <nav aria-label="ניווט ראשי" className="flex shrink-0 justify-center gap-1 border-b px-3 py-2">
-            <a href="#/" aria-current={page === "quiz" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "quiz" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
-              <Gamepad2 className="size-4" />משחק
-            </a>
-            <a href="#/members" aria-current={page === "members" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "members" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
-              <Users className="size-4" />כל החברים
-            </a>
-          </nav>
+          <dialog ref={navigationDrawer} id="navigation-drawer" aria-labelledby="navigation-title" dir="rtl" onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              const bounds = event.currentTarget.getBoundingClientRect()
+              if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+                event.currentTarget.close()
+              }
+            }
+          }} className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-72 max-w-[85vw] flex-col border-l bg-background p-4 text-foreground shadow-xl backdrop:bg-black/40 open:flex">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h2 id="navigation-title" className="text-lg font-semibold">הכר את החבר</h2>
+              <button type="button" autoFocus aria-label="סגירת תפריט ניווט" title="סגירת תפריט ניווט" onClick={() => navigationDrawer.current?.close()} className="flex size-10 items-center justify-center rounded-md hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+                <X className="size-5" />
+              </button>
+            </div>
+            <nav aria-label="ניווט ראשי" className="flex flex-col gap-2">
+              <a href="#/" onClick={() => navigationDrawer.current?.close()} aria-current={page === "quiz" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "quiz" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
+                <Gamepad2 className="size-4" />משחק
+              </a>
+              <a href="#/members" onClick={() => navigationDrawer.current?.close()} aria-current={page === "members" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "members" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
+                <Users className="size-4" />כל החברים
+              </a>
+              <a href="#/settings" onClick={() => navigationDrawer.current?.close()} aria-current={page === "settings" ? "page" : undefined} className={cn("flex items-center gap-2 rounded-md px-4 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring", page === "settings" ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
+                <Settings className="size-4" />הגדרות
+              </a>
+            </nav>
+          </dialog>
           {/* Main content */}
           <div className="container mx-auto min-h-0 flex-1">
-            {page === "members" ? <MembersPage /> : <QuestionPage />}
+            {page === "members" ? <MembersPage /> : page === "settings" ? <SettingsPage onRestart={() => {
+              window.location.hash = "#/"
+              setSessionVersion(version => version + 1)
+            }} /> : <QuestionPage />}
           </div>
         </div>
       </UserContextProvider>

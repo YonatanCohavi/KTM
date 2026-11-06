@@ -47,12 +47,8 @@ export function GetQuestion(members: Member[], exclude:number[] = []): Question 
     });
 }
 export function setAnswer(id: number, isCorrect: boolean) {
-    const weightsJson = localStorage.getItem("memberWeights");
-    if (!weightsJson) {
-        throw new Error("Weights not initialized");
-    }
-    const weigths = JSON.parse(weightsJson) as weight[];
-    const updatedWeights = weigths.map(w => {
+    const weights = loadWeights();
+    const updatedWeights = weights.map(w => {
         if (w.id === id) {
             const factor = isCorrect ? 0.95 : 1.2;
             return { ...w, weight: w.weight * factor };
@@ -65,16 +61,64 @@ export function setAnswer(id: number, isCorrect: boolean) {
 }
 
 export function loadMemberKnowledge(): Map<number, number> {
+    return new Map(loadWeights().map(member => [
+        member.id,
+        Math.round(Math.max(0, Math.min(1, 1 - member.weight)) * 100)
+    ]));
+}
+
+function reportWeightCorruption(reason: string, removedCount: number) {
+    const analyticsWindow = window as Window & {
+        gtag?: (command: "event", name: string, parameters: Record<string, string | number>) => void;
+    };
     try {
-        const stored = z.array(weightSchema).safeParse(JSON.parse(localStorage.getItem("memberWeights") ?? "[]"));
-        if (!stored.success) return new Map();
-        return new Map(stored.data.map(member => [
-            member.id,
-            Math.round(Math.max(0, Math.min(1, 1 - member.weight)) * 100)
-        ]));
+        analyticsWindow.gtag?.("event", "member_weights_corruption", {
+            reason,
+            removed_count: removedCount
+        });
     } catch {
-        return new Map();
+        return;
     }
+}
+
+function loadWeights(members?: Member[]): weight[] {
+    const storedJson = localStorage.getItem("memberWeights");
+    if (storedJson === null) return [];
+
+    let stored: unknown;
+    try {
+        stored = JSON.parse(storedJson);
+    } catch {
+        localStorage.removeItem("memberWeights");
+        reportWeightCorruption("invalid_json", 1);
+        return [];
+    }
+    if (!Array.isArray(stored)) {
+        localStorage.removeItem("memberWeights");
+        reportWeightCorruption("invalid_structure", 1);
+        return [];
+    }
+
+    const membersById = members && new Map(members.map(member => [member.id, member]));
+    const seenIds = new Set<number>();
+    const weights: weight[] = [];
+    for (const entry of stored) {
+        const parsed = weightSchema.safeParse(entry);
+        if (!parsed.success || seenIds.has(parsed.data.id)) continue;
+        const currentWeight = parsed.data;
+        if (membersById) {
+            const member = membersById.get(currentWeight.id);
+            if (!member || member.genderCode !== currentWeight.genderCode) continue;
+        }
+        seenIds.add(currentWeight.id);
+        weights.push(currentWeight);
+    }
+    const removedCount = stored.length - weights.length;
+    if (removedCount > 0) {
+        localStorage.setItem("memberWeights", JSON.stringify(weights));
+        reportWeightCorruption("invalid_entries", removedCount);
+    }
+    return weights;
 }
 
 function pickWeight(weights: weight[], gender?: number, exclude: number[] = []): weight {
@@ -94,29 +138,10 @@ function pickWeight(weights: weight[], gender?: number, exclude: number[] = []):
     return weights[weights.length - 1];
 }
 function initWeights(members: Member[]) {
-    const currentWeightsJson = localStorage.getItem("memberWeights");
-    if (currentWeightsJson) {
-        const memberIds = new Set(members.map(member => member.id));
-        const currentWeights = z.array(weightSchema).superRefine((weights, context) => {
-            weights.forEach((currentWeight, index) => {
-                if (!memberIds.has(currentWeight.id)) {
-                    context.addIssue({
-                        code: "custom",
-                        path: [index, "id"],
-                        message: `Stored weight references unknown member ID: ${currentWeight.id}`
-                    });
-                }
-            });
-        }).parse(JSON.parse(currentWeightsJson));
-        const missingWeights = members.filter(m => !currentWeights.find(w => w.id === m.id))
-        if (missingWeights.length > 0) {
-            const newWeights = missingWeights.map(m => ({ id: m.id, genderCode: m.genderCode, weight: 1 }));
-            currentWeights.push(...newWeights);
-        }
-        localStorage.setItem("memberWeights", JSON.stringify(currentWeights));
-        return currentWeights;
-    }
-    const weights = members.map(m => ({ id: m.id, genderCode: m.genderCode, weight: 1 }));
+    const weights = loadWeights(members);
+    const storedIds = new Set(weights.map(currentWeight => currentWeight.id));
+    weights.push(...members.filter(member => !storedIds.has(member.id))
+        .map(member => ({ id: member.id, genderCode: member.genderCode, weight: 1 })));
     localStorage.setItem("memberWeights", JSON.stringify(weights));
     return weights;
 }
