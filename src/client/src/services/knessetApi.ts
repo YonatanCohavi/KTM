@@ -1,5 +1,6 @@
 import axios from "axios";
 import z from "zod";
+import { membersSchema } from "./memberSchema";
 
 const knessetClient = axios.create({
   baseURL: 'https://knesset.gov.il/WebSiteApi/knessetapi',
@@ -8,37 +9,41 @@ const knessetClient = axios.create({
   },
 });
 
+const factionResponseSchema = z.object({
+  FactionList: z.array(z.object({ ID: z.number(), Name: z.string() }))
+});
 
-const memberSchema = z.object({
-  id: z.number(),
-  factionId: z.number(),
-  imageUrl: z.string(),
-  firstName: z.string(),
-  lastName: z.string(),
-  genderCode: z.number(),
-  fraction: z.object({ id: z.number(), name: z.string() })
+const memberResponseSchema = z.object({
+  mks: z.array(z.object({
+    MkId: z.number(),
+    FactionId: z.number(),
+    ImagePath: z.string(),
+    Firstname: z.string(),
+    Lastname: z.string(),
+    GenderId: z.number()
+  }))
 })
-export type Member = z.infer<typeof memberSchema>;
+
 const knessetApi = {
     getmembers: async () => {
         const factionPromise = knessetClient.get('/Faction/GetFactions?lng=he');    
         const membersPromise = knessetClient.get('/MkLobby/GetMkLobbyData120?lang=he');    
         const [membersResponse, factionsResponse] = await Promise.all([membersPromise,factionPromise]);
-        const factions = factionsResponse.data['FactionList'].map((f:any) => {
-            return { id: f.ID, name: f.Name };
-        });
-        const members = membersResponse.data['mks'].map((m: any) => {
-            return memberSchema.parse({
-                id: m.MkId,
-                factionId: m.FactionId,
-                imageUrl: m.ImagePath,
-                firstName: m.Firstname,
-                lastName: m.Lastname,
-                genderCode: m.GenderId,
-                fraction: factions.find((f:any) => f.id === m.FactionId)!,
-            });
-        });
-        return members;
+        const factions = factionResponseSchema.parse(factionsResponse.data).FactionList.map(faction => ({
+            id: faction.ID,
+            name: faction.Name
+        }));
+        const rawMembers = memberResponseSchema.parse(membersResponse.data).mks;
+        const members = rawMembers.map(member => ({
+          id: member.MkId,
+                factionId: member.FactionId,
+                imageUrl: member.ImagePath,
+                firstName: member.Firstname,
+                lastName: member.Lastname,
+                genderCode: member.GenderId,
+                fraction: factions.find(faction => faction.id === member.FactionId),
+            }));
+        return membersSchema.parse(members);
     } 
 }
 

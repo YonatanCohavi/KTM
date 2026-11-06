@@ -40,6 +40,7 @@ const QuestionPage = () => {
     const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState(loadStats());
     const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
+    
     const levels = useMemo(() => {
         return {
             currentLevelXP: getTotalXPForLevel(playrsStatus.level),

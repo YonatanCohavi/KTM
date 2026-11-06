@@ -177,7 +177,6 @@ export function saveStats(stats: PlayerStats): void {
 }
 
 export function loadStats(): PlayerStats {
-  console.log('load stats');
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) {
     return { xp: 0, level: 1, streak: 0, lastPlay: new Date() };
