@@ -26,16 +26,17 @@ export function SettingsPage({ onRestart }: { onRestart: () => void }) {
         }
     }
 
-    function restartGame() {
+    async function restartGame() {
+        let stats;
         try {
-            resetStats();
+            stats = resetStats();
             clearLocalLeaderboard();
             localStorage.removeItem("memberWeights");
-            localStorage.removeItem("browserUUID");
         } catch {
             setError("לא הצלחנו למחוק את הנתונים. נסו שוב.");
             return;
         }
+        await syncPlayerToLeaderboard(browserUUID, name, stats.level, stats.xp, stats.streak);
         confirmation.current?.close();
         onRestart();
     }
@@ -73,7 +74,7 @@ export function SettingsPage({ onRestart }: { onRestart: () => void }) {
         {/* Game Data Settings */}
         <div className="flex flex-col items-start gap-4 border-b py-6">
             <h2 className="text-lg font-semibold">נתוני המשחק</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">האיפוס ימחק את הניקוד, הרמה, רצף התשובות, רמות ההיכרות ומזהה המשתמש השמורים בדפדפן הזה.</p>
+            <p className="max-w-2xl text-sm text-muted-foreground">האיפוס ימחק את הניקוד, הרמה, רצף התשובות ורמות ההיכרות השמורים בדפדפן הזה.</p>
             <Button variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
                 setError("");
                 confirmation.current?.showModal();

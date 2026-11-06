@@ -1,7 +1,6 @@
 import { LevelIcon } from "@/components/LevelIcon";
 import { Progress } from "@/components/ui/progress";
 import { getLevelName, getTotalXPForLevel } from "@/services/statsService";
-import { useUser } from "@/contexts/userContext";
 import { Flame, Trophy } from "lucide-react";
 
 interface PlayerStatsHeaderProps {
@@ -11,20 +10,12 @@ interface PlayerStatsHeaderProps {
 }
 
 const PlayerStatsHeader = ({ xp, level, streak }: PlayerStatsHeaderProps) => {
-    const { name } = useUser();
     const currentLevelXP = getTotalXPForLevel(level);
     const nextLevelXP = getTotalXPForLevel(level + 1);
     const progress = (xp - currentLevelXP) / (nextLevelXP - currentLevelXP) * 100;
 
     return (
-        <div className="shrink-0 space-y-3">
-            {/* Player Name */}
-            {name && (
-                <div className="text-center">
-                    <h2 className="text-lg font-bold text-primary sm:text-xl">{name}</h2>
-                </div>
-            )}
-            
+        <div className="shrink-0 space-y-2">
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3 text-base font-semibold sm:text-xl">
                 <div className="flex min-w-0 flex-col items-start gap-1" title="ניקוד">
                     <span className="text-sm font-medium text-muted-foreground">ניקוד</span>

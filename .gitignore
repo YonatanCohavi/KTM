@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation files (local development only)
+LEADERBOARD_*.md
+PLAYER_NAMES_*.md
+IMPLEMENTATION_SUMMARY.md
+QUICK_REFERENCE.md
+VERIFICATION_CHECKLIST.md
+README_LEADERBOARD.md
+IMMEDIATE_NAME_SYNC_FIX.md
+USERNAME_IN_HEADER.md
+SUPABASE_MIGRATION_ADD_NAMES.sql
+.env.example
+scripts/local-data-management.js
