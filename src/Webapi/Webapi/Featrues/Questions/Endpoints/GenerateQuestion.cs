@@ -3,7 +3,12 @@ using Webapi.Featrues.Questions.Commands;
 
 namespace Webapi.Featrues.Questions.Endpoints;
 
-public record struct GenerateQuestionResponse(QuizQuestion Question);
+public class ResponseQuizQuestion
+{
+    public Guid Id { get; set; }
+    public required QuestionOption[] Options { get; set; }
+}
+public record struct GenerateQuestionResponse(ResponseQuizQuestion Question);
 public record GenerateQuestionRequest(string BrowserId);
 public class GenerateQuestion : Endpoint<GenerateQuestionRequest, GenerateQuestionResponse>
 {
@@ -15,6 +20,10 @@ public class GenerateQuestion : Endpoint<GenerateQuestionRequest, GenerateQuesti
     public override async Task<GenerateQuestionResponse> ExecuteAsync(GenerateQuestionRequest req, CancellationToken ct)
     {
         var question = await new GenerateQuestionCommand(req.BrowserId).ExecuteAsync(ct);
-        return new GenerateQuestionResponse(question);
+        return new GenerateQuestionResponse(new ResponseQuizQuestion
+        {
+            Id = question.Id,
+            Options = question.Options
+        });
     }
 }

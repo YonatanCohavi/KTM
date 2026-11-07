@@ -11,7 +11,7 @@ public class AnswerQuestion : Endpoint<AnswerQuestionRequest, AnswerQuestionResp
 {
     public override void Configure()
     {
-        Get("/question/{QuestionId}/answer");
+        Post("/question/{QuestionId}/answer");
     }
 
     public override async Task<AnswerQuestionResponse> ExecuteAsync(AnswerQuestionRequest req, CancellationToken ct)

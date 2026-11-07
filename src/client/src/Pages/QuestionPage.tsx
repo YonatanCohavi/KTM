@@ -3,12 +3,12 @@ import { PlayerStatsHeader } from "@/components/PlayerStatsHeader";
 import { TimeBonusMeter } from "@/components/TimeBonusMeter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useMembersQuery } from "@/services/membersService";
-import { GetQuestion, setAnswer, type Question } from "@/services/questionService";
-import { loadStats, updateStats } from "@/services/statsService";
-import { syncPlayerToLeaderboard } from "@/services/leaderboardService";
 import { useUser } from "@/contexts/userContext";
+import { cn } from "@/lib/utils";
+import { syncPlayerToLeaderboard } from "@/services/leaderboardService";
+import { useAnswer, useNextQuestion, type QuestionResponse } from "@/services/question-api";
+import { setAnswer } from "@/services/questionService";
+import { loadStats, updateStats } from "@/services/statsService";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -22,7 +22,25 @@ interface FloatingNumber {
 
 const QuestionPage = () => {
     const { id: browserUUID, name: playerName } = useUser();
-    
+    const { mutateAsync: fetchNextQuestion } = useNextQuestion({browserUUID});
+    const { mutateAsync: answerQuestionAsync } = useAnswer({browserUUID});
+    const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse>();
+    useEffect(() => {
+        handleGetNextQuestion();
+    }, []);
+
+    const handleGetNextQuestion = () => {
+        fetchNextQuestion(undefined, {
+            onSuccess: (data) => {
+                setCurrentQuestion(data.question);
+            },
+        });
+    };
+    useEffect(() => {
+        if (currentQuestion) {
+            console.log("Current question:", currentQuestion);
+        }
+    }, [currentQuestion]);
     useEffect(() => {
         const handleFocus = () => {
             setPlayerStatus(loadStats());
@@ -40,8 +58,8 @@ const QuestionPage = () => {
     const [wrongAnswers, setWrongAnswers] = useState<number[]>([]);
     const [numbers, setNumbers] = useState<FloatingNumber[]>([]);
 
-    const [question, setQuestion] = useState<Question | undefined>(undefined);
-    const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
+    // const [question, setQuestion] = useState<Question | undefined>(undefined);
+    // const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState(loadStats());
     const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -79,108 +97,122 @@ const QuestionPage = () => {
         setNumbers((prev) => prev.filter((num) => num.id !== id));
     };
 
-    useEffect(() => {
-        newQuestion();
-    }, [members]);
+    // useEffect(() => {
+    //     newQuestion();
+    // }, [members]);
 
 
 
-    function newQuestion() {
-        if (!members)
-            return;
-        const exclude: number[] = [];
-        if (question) {
-            exclude.push(question?.answer.id);
-            exclude.push(...question.options.map(o => o.id));
-        }
-        const q = GetQuestion(members, exclude);
-        setQuestion(q);
-        setWrongAnswers([]);
-        setQuestionStartTime(null);
-        setElapsedSeconds(0);
-        setImageError(false);
-        setImageAttempt(0);
-    }
+    // function newQuestion() {
+    //     if (!members)
+    //         return;
+    //     const exclude: number[] = [];
+    //     if (question) {
+    //         exclude.push(question?.answer.id);
+    //         exclude.push(...question.options.map(o => o.id));
+    //     }
+    //     const q = GetQuestion(members, exclude);
+    //     setQuestion(q);
+    //     setWrongAnswers([]);
+    //     setQuestionStartTime(null);
+    //     setElapsedSeconds(0);
+    //     setImageError(false);
+    //     setImageAttempt(0);
+    // }
 
-    // preload images
-    useEffect(() => {
-        if (!question)
-            return;
-        question.options.forEach(option => {
-            const img = new Image();
-            img.src = option.imageUrl;
-        });
-    }, [question]);
-
-    function answer(e: React.MouseEvent, optionId: number) {
-        if (!question || !questionStartTime)
-            return;
-
-        let correct = true;
-        let points = 10;
-        if (optionId != question.answer.id) {
-            setWrongAnswers([...wrongAnswers, optionId]);
-            correct = false;
-        }
-        // user clicked on the last option
-        if (wrongAnswers.length >= 3) {
-            newQuestion();
-            return;
-        }
-
-        // did not know both members
-        setAnswer(optionId, correct);
-        if (!correct)
-            setAnswer(question.answer.id, false);
-
-        if (correct) {
-            points -= (wrongAnswers.length) * 3;
-        } else {
-            points *= -1;
-        }
-        const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
-        const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: points, penalizeStreak: true });
-        if (newStatus.level > playrsStatus.level) {
-            setShowFireworks(true);
-            setTimeout(() => {
-                setShowFireworks(false);
-            }, 5000);
-        }
-        if (xpGained > 0) {
-            showScore(e, xpGained);
-        } else {
-            showScore(e, xpGained);
-        }
-        setPlayerStatus(newStatus);
         
-        // Sync to leaderboard (async, doesn't block UI)
-        void syncPlayerToLeaderboard(browserUUID, playerName, newStatus.level, newStatus.xp, newStatus.streak);
-        if (wrongAnswers.length >= 3 || correct)
-            newQuestion();
+    // useEffect(() => {
+    //     if (!question)
+    //         return;
+    //     question.options.forEach(option => {
+    //         const img = new Image();
+    //         img.src = option.imageUrl;
+    //     });
+    // }, [question]);
+
+    async function answer(e: React.MouseEvent, optionId: number) {
+        if (!currentQuestion)
+            return;
+        const {isCorrect} = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
+        if (!isCorrect){
+             setWrongAnswers([...wrongAnswers, optionId]);
+        }
     }
+    // function answer(e: React.MouseEvent, optionId: number) {
+    //     if (!currentQuestion || !questionStartTime)
+    //         return;
 
-    if (membersError)
-        return <div className="flex h-full flex-col justify-center items-center gap-4 text-xl font-semibold">
-            <p>לא הצלחנו לטעון את נתוני החברים.</p>
-            <Button onClick={() => { void refetchMembers(); }}>נסו שוב</Button>
-        </div>;
+    //     let correct = true;
+    //     let points = 10;
+    //     if (optionId != currentQuestion.answer.id) {
+    //         setWrongAnswers([...wrongAnswers, optionId]);
+    //         correct = false;
+    //     }
+    //     // user clicked on the last option
+    //     if (wrongAnswers.length >= 3) {
+    //         newQuestion();
+    //         return;
+    //     }
 
-    if (!members || !question)
+    //     // did not know both members
+    //     setAnswer(optionId, correct);
+    //     if (!correct)
+    //         setAnswer(question.answer.id, false);
+
+    //     if (correct) {
+    //         points -= (wrongAnswers.length) * 3;
+    //     } else {
+    //         points *= -1;
+    //     }
+    //     const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
+    //     const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: points, penalizeStreak: true });
+    //     if (newStatus.level > playrsStatus.level) {
+    //         setShowFireworks(true);
+    //         setTimeout(() => {
+    //             setShowFireworks(false);
+    //         }, 5000);
+    //     }
+    //     if (xpGained > 0) {
+    //         showScore(e, xpGained);
+    //     } else {
+    //         showScore(e, xpGained);
+    //     }
+    //     setPlayerStatus(newStatus);
+
+    //     // Sync to leaderboard (async, doesn't block UI)
+    //     void syncPlayerToLeaderboard(browserUUID, playerName, newStatus.level, newStatus.xp, newStatus.streak);
+    //     if (wrongAnswers.length >= 3 || correct)
+    //         newQuestion();
+    // }
+
+    // if (membersError)
+    //     return <div className="flex h-full flex-col justify-center items-center gap-4 text-xl font-semibold">
+    //         <p>לא הצלחנו לטעון את נתוני החברים.</p>
+    //         <Button onClick={() => { void refetchMembers(); }}>נסו שוב</Button>
+    //     </div>;
+
+    if (!currentQuestion)
         return <div className="flex h-full flex-col justify-center items-center gap-1.5 waiting-chairs">
             <div className="text-5xl ">🪑 🪑 🪑</div>
             <p className="text-2xl font-semibold">מחכה לחברים..</p>
         </div>;
 
+    function imageURL(memberId: number) {
+        return `${import.meta.env.VITE_API_BASE_URL}/member/${memberId}/image`;
+    }
+     function questionImageUrl(questionId: string) {
+        return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
+    }
     return (
         <div className="mx-auto flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4 lg:max-w-3xl lg:px-8 xl:gap-6 xl:py-6">
             <PlayerStatsHeader xp={playrsStatus.xp} level={playrsStatus.level} streak={playrsStatus.streak} />
             <TimeBonusMeter elapsedSeconds={elapsedSeconds} />
             <div className="@container-[size] flex min-h-0 flex-1 items-center justify-center">
                 <Avatar
-                    key={`${question.answer.id}-${imageAttempt}`}
+                    key={`${currentQuestion.id}-${imageAttempt}`}
                     className="aspect-square h-auto w-[min(100cqh,100cqw)] max-w-64 shrink-0 lg:max-w-80"
                 >
-                    <AvatarImage src={question.answer.imageUrl} className="object-cover " alt="User Avatar"
+                    <AvatarImage src={questionImageUrl(currentQuestion.id)} className="object-cover " alt="User Avatar"
                         onLoad={() => setQuestionStartTime(startTime => startTime ?? new Date())}
                         onLoadingStatusChange={status => {
                             if (status === "error") {
@@ -205,20 +237,20 @@ const QuestionPage = () => {
             </div>
             {/* <div className="grow"/> */}
             <div className="grid shrink-0 gap-1 sm:gap-2 lg:grid-cols-2 lg:gap-3">
-                {question.options.map((option) => (
+                {currentQuestion?.options.map((option) => (
                     <div key={option.id} className={cn("flex min-w-0", { "gap-4": wrongAnswers.includes(option.id) })}>
                         <Button
-                            className={cn(import.meta.env.DEV && option.id == question.answer.id && "bg-amber-600", "flex h-11 min-w-0 grow opacity-100 transition-all sm:h-16 lg:justify-center lg:text-lg xl:h-20", { shake: wrongAnswers.includes(option.id) })}
+                            className={cn("flex h-11 min-w-0 grow opacity-100 transition-all sm:h-16 lg:justify-center lg:text-lg xl:h-20", { shake: wrongAnswers.includes(option.id) })}
                             onClick={(e) => answer(e, option.id)}
                             disabled={!questionStartTime || wrongAnswers.includes(option.id)}>
                             <span className="min-w-0 whitespace-normal wrap-break-word">
-                                {option.firstName} {option.lastName}
+                                {option.name}
                             </span>
                             <div className="grow lg:hidden"></div>
                         </Button>
                         <div className={cn("w-0 overflow-hidden transition-all", { "w-10": wrongAnswers.includes(option.id) })}>
                             <Avatar className="my-auto size-8 sm:size-10">
-                                <AvatarImage src={option.imageUrl} alt="User Avatar" className="object-cover" />
+                                <AvatarImage src={imageURL(option.id)} alt="User Avatar" className="object-cover" />
                                 <AvatarFallback></AvatarFallback>
                             </Avatar>
                         </div>
@@ -245,3 +277,4 @@ const QuestionPage = () => {
     );
 }
 export { QuestionPage };
+

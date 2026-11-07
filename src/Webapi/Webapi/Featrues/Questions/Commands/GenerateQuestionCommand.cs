@@ -9,6 +9,7 @@ public class QuestionOption
     public required int Id { get; set; }
     public required string Name { get; set; }
 }
+
 public class QuizQuestion
 {
     public Guid Id { get; set; }
