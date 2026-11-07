@@ -70,7 +70,8 @@ public class GenerateQuestionCommandHandler(IKnessetAPI knessetAPI, IBrowserWeig
                 QuestionId = question.Id,
                 CorrectMemberId = correctMember.MkId,
                 UserId = command.UserId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                WrongAnswerCount = 0
             })
             .SetSlidingExpiration(TimeSpan.FromMinutes(5));
         return question;

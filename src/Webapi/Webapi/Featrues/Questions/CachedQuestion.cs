@@ -8,4 +8,5 @@ public class CachedQuestion
     public int CorrectMemberId { get; set; }
     public required string UserId { get; set; }
     public required DateTime CreatedAt { get; set; }
+    public int WrongAnswerCount { get; set; }
 }
