@@ -4,6 +4,7 @@ using Supabase.Core.Http;
 using Supabase.Extensions.DependencyInjection;
 using Webapi.Featrues.Auth;
 using Webapi.Featrues.Knesset;
+using Webapi.Featrues.Members;
 using Webapi.Featrues.Questions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddHttpClient<IKnessetAPI, KnessetAPI>(client =>
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IBrowserWeightCache, SupabaseBrowserWeightCache>();
+builder.Services.AddScoped<IMemberSessionManager, MemberSessionManager>();
 builder.Services.AddSupabase(
     supabaseUrl: builder.Configuration["Supabase:Url"]!,
     supabaseKey: builder.Configuration["Supabase:Key"]!,
