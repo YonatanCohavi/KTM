@@ -35,9 +35,9 @@ public class SupabaseBrowserWeightCache(IMemoryCache cache, Supabase.Client supa
         return weights.Model?.MemberWeights ?? [];
     }
 
-    public async Task AdjustWeightAsync(string browserUuid, int memberId, bool known)
+    public async Task AdjustWeightAsync(string browserUuid, int memberId, bool increase)
     {
-        var multiplier = known ? 1.05 : 0.95;
+        var multiplier = increase ? 1.05 : 0.95;
 
         var parameters = new Dictionary<string, object>
         {
@@ -46,7 +46,7 @@ public class SupabaseBrowserWeightCache(IMemoryCache cache, Supabase.Client supa
             { "p_multiplier", multiplier }
         };
 
-        var res = await supabase.Rpc("adjust_member_weight", parameters);
+        await supabase.Rpc("adjust_member_weight", parameters);
     }
     public void SetWeights(string browserId, Dictionary<int, double> weights)
     {

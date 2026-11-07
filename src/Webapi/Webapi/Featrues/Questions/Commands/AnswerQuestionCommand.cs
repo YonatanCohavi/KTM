@@ -1,5 +1,4 @@
-﻿
-using FastEndpoints;
+﻿using FastEndpoints;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Webapi.Featrues.Questions.Commands;
@@ -16,6 +15,8 @@ public class AnswerQuestionCommandHandler(IMemoryCache memoryCache, IBrowserWeig
         await browserWeightCache.AdjustWeightAsync("development", command.AnsweredMemberId, iscorrect);
         if (iscorrect)
             memoryCache.Remove(CachedQuestion.CacheKey(command.QuestionId));
+
+
         return iscorrect;
     }
 }
