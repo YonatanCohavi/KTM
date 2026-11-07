@@ -16,21 +16,21 @@ public class QuizQuestion
     public required QuestionOption[] Options { get; set; }
 }
 
-public record struct GenerateQuestionCommand(string BrowserId) : ICommand<QuizQuestion>;
+public record struct GenerateQuestionCommand(string UserId) : ICommand<QuizQuestion>;
 
 public record GenerateQuestionCommandWithWeights(
-    string BrowserId,
+    string UserId,
     int[]? Exclude,
     Dictionary<int, double>? MemberWeights
 ) : ICommand<QuizQuestion>;
 
-public class GenerateQuestionCommandHandler(IKnessetAPI knessetAPI, IBrowserWeightCache weightCache,IMemoryCache memoryCache) : ICommandHandler<GenerateQuestionCommand, QuizQuestion>
+public class GenerateQuestionCommandHandler(IKnessetAPI knessetAPI, IBrowserWeightCache weightCache, IMemoryCache memoryCache) : ICommandHandler<GenerateQuestionCommand, QuizQuestion>
 {
     private readonly Random _random = Random.Shared;
     private readonly WeightedRandomSelector _selector = new();
     public async Task<QuizQuestion> ExecuteAsync(GenerateQuestionCommand command, CancellationToken ct)
     {
-        var weights = await weightCache.GetWeightsAsync(command.BrowserId, ct);
+        var weights = await weightCache.GetWeightsAsync(command.UserId, ct);
         var members = await knessetAPI.GetKnessetMembersAsync(ct);
         var allmembersWeights = members.ToDictionary(m => m.MkId, m => weights.FirstOrDefault(w => w.MemberId == m.MkId)?.Knowlage ?? 1.0);
 
@@ -65,7 +65,13 @@ public class GenerateQuestionCommandHandler(IKnessetAPI knessetAPI, IBrowserWeig
             })]
         };
         using var entiry = memoryCache.CreateEntry(CachedQuestion.CacheKey(question.Id))
-            .SetValue(new CachedQuestion { QuestionId = question.Id, CorrectMemberId = correctMember.MkId })
+            .SetValue(new CachedQuestion
+            {
+                QuestionId = question.Id,
+                CorrectMemberId = correctMember.MkId,
+                UserId = command.UserId,
+                CreatedAt = DateTime.UtcNow
+            })
             .SetSlidingExpiration(TimeSpan.FromMinutes(5));
         return question;
     }
