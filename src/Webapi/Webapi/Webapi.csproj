@@ -4,11 +4,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>31982ca6-e91f-40e8-a61a-a5c239490b93</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FastEndpoints" Version="8.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
+    <PackageReference Include="Supabase" Version="8.9.0" />
+    <PackageReference Include="Supabase.Extensions.DependencyInjection" Version="8.9.0" />
   </ItemGroup>
 
   <ItemGroup>

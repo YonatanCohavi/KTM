@@ -4,21 +4,10 @@ namespace Webapi.Featrues.Questions;
 /// Utility for selecting items from a collection using weighted probabilities.
 /// Higher weight = higher probability of selection.
 /// </summary>
-public class WeightedRandomSelector
+public class WeightedRandomSelector(Random? random = null)
 {
-    private readonly Random _random;
+    private readonly Random _random = random ?? Random.Shared;
 
-    public WeightedRandomSelector(Random? random = null)
-    {
-        _random = random ?? Random.Shared;
-    }
-
-    /// <summary>
-    /// Selects a single item from a weighted collection.
-    /// </summary>
-    /// <param name="items">Items to select from</param>
-    /// <param name="weightSelector">Function to extract weight from each item</param>
-    /// <returns>A randomly selected item based on weights</returns>
     public T SelectOne<T>(IEnumerable<T> items, Func<T, double> weightSelector)
     {
         var itemList = items.ToList();
@@ -41,17 +30,9 @@ public class WeightedRandomSelector
                 return itemList[i];
         }
 
-        // Fallback (should rarely happen due to floating point precision)
-        return itemList[itemList.Count - 1];
+        return itemList[^1];
     }
 
-    /// <summary>
-    /// Selects multiple unique items from a weighted collection.
-    /// </summary>
-    /// <param name="items">Items to select from</param>
-    /// <param name="count">Number of items to select</param>
-    /// <param name="weightSelector">Function to extract weight from each item</param>
-    /// <returns>List of randomly selected unique items based on weights</returns>
     public List<T> SelectMultiple<T>(IEnumerable<T> items, int count, Func<T, double> weightSelector)
     {
         var itemList = items.ToList();

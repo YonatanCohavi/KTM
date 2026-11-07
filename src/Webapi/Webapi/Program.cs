@@ -1,5 +1,7 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication;
+using Supabase.Core.Http;
+using Supabase.Extensions.DependencyInjection;
 using Webapi.Featrues.Auth;
 using Webapi.Featrues.Knesset;
 using Webapi.Featrues.Questions;
@@ -13,7 +15,16 @@ builder.Services.AddHttpClient<IKnessetAPI, KnessetAPI>(client =>
 });
 
 builder.Services.AddMemoryCache();
-builder.Services.AddSingleton<IBrowserWeightCache, BrowserWeightCache>();
+builder.Services.AddScoped<IBrowserWeightCache, SupabaseBrowserWeightCache>();
+builder.Services.AddSupabase(
+    supabaseUrl: builder.Configuration["Supabase:Url"]!,
+    supabaseKey: builder.Configuration["Supabase:Key"]!,
+    configureOptions: options =>
+    {
+        options.AutoConnectRealtime = true;
+        options.AutoRefreshToken = true;
+        options.PostgrestRetry = new RetryOptions { MaxRetries = 3 };
+    });
 builder.Services.AddHealthChecks()
     .AddCheck<KnessetapiHealth>("KnessetAPI");
 builder.Services.AddCors(options =>
