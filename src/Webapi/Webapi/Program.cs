@@ -17,7 +17,9 @@ builder.Services.AddHttpClient<IKnessetAPI, KnessetAPI>(client =>
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IBrowserWeightCache, SupabaseBrowserWeightCache>();
+builder.Services.AddSingleton<IXPCalculator, XPCalculator>();
 builder.Services.AddScoped<IMemberSessionManager, MemberSessionManager>();
+builder.Services.AddScoped<ILeaderboardXpStore, SupabaseLeaderboardXpStore>();
 builder.Services.AddSupabase(
     supabaseUrl: builder.Configuration["Supabase:Url"]!,
     supabaseKey: builder.Configuration["Supabase:Key"]!,

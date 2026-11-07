@@ -16,6 +16,7 @@ public class MemberSessionManager(IMemoryCache memoryCache) : IMemberSessionMana
         new TimingMultiplierRule(30.0, 1.05),
     ];
 
+    public int GetWrongPenelty() => _baseValue * -1;
     public int RegisterAnswer(string userId, bool isCorrect)
     {
         var streakKey = GetStreakCacheKey(userId);

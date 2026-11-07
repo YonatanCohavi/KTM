@@ -1,10 +1,11 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Webapi.Featrues.Questions.Commands;
+using Webapi.Featrues.User;
 
 namespace Webapi.Featrues.Questions.Endpoints;
 
-public record struct AnswerQuestionResponse(bool IsCorrect);
+public record struct AnswerQuestionResponse(bool IsCorrect, UserStats UserStats);
 public record AnswerQuestionRequest(Guid QuestionId, int MemberId);
 public class AnswerQuestion : Endpoint<AnswerQuestionRequest, AnswerQuestionResponse>
 {
@@ -15,7 +16,7 @@ public class AnswerQuestion : Endpoint<AnswerQuestionRequest, AnswerQuestionResp
 
     public override async Task<AnswerQuestionResponse> ExecuteAsync(AnswerQuestionRequest req, CancellationToken ct)
     {
-        var isCorrect = await new AnswerQuestionCommand(req.QuestionId, req.MemberId).ExecuteAsync(ct);
-        return new AnswerQuestionResponse(isCorrect);
+        var result = await new AnswerQuestionCommand(req.QuestionId, req.MemberId).ExecuteAsync(ct);
+        return new AnswerQuestionResponse(result.IsCorrect, result.UserStats);
     }
 }
