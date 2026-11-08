@@ -11,7 +11,7 @@ interface PlayerStatsHeaderProps {
 
 const PlayerStatsHeader = memo(({ stats }: PlayerStatsHeaderProps) => {
     const { currentLevelXp: xp, level, streak } = useMemo(() => stats, [stats]);
-    const nextLevelXP = stats.level.nextLevelXp || 0;
+    const nextLevelXP = stats.level.nextLevelXp  - stats.level.currentLevelXp || 0;
     const currentLevelXP = stats.level.currentLevelXp || 0;
     const progress = (xp - currentLevelXP) / (nextLevelXP - currentLevelXP) * 100;
     return (
