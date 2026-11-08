@@ -29,8 +29,12 @@ public class KnessetAPI(HttpClient httpClient, IMemoryCache memoryCache) : IKnes
 {
     public async Task<Faction[]> GetFactionsAsync(CancellationToken cancellationToken)
     {
-        var response = await httpClient.GetFromJsonAsync<FarctionResponse>("Faction/GetFactions?lng=he",cancellationToken);
-        return response?.FactionList ?? [];
+        return await memoryCache.GetOrCreateAsync("factions", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            var response = await httpClient.GetFromJsonAsync<FarctionResponse>("Faction/GetFactions?lng=he", cancellationToken);
+            return response?.FactionList ?? [];
+        }) ?? [];   
     }
 
     public async Task<KnessentMember[]> GetKnessetMembersAsync(CancellationToken cancellationToken)

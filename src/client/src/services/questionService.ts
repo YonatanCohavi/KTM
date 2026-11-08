@@ -1,5 +1,5 @@
 import z from "zod";
-import { memberSchema, type Member } from "./memberSchema";
+import { Member, type Member } from "./memberSchema";
 
 const weightSchema = z.object({
     id: z.number(),
@@ -9,8 +9,8 @@ const weightSchema = z.object({
 type weight = z.infer<typeof weightSchema>;
 
 const questionSchema = z.object({
-    answer: memberSchema,
-    options: z.array(memberSchema).length(4)
+    answer: Member,
+    options: z.array(Member).length(4)
 });
 
 export type Question = {
@@ -40,7 +40,7 @@ export function GetQuestion(members: Member[], exclude:number[] = []): Question 
     }
     
     shuffle(options);
-    const membersById = new Map(members.map(member => [member.id, member]));
+    const membersById = new Map(members.map(member => [member.mkId, member]));
     return questionSchema.parse({
         answer: membersById.get(weight.id),
         options: options.map(option => membersById.get(option.id))
@@ -99,7 +99,7 @@ function loadWeights(members?: Member[]): weight[] {
         return [];
     }
 
-    const membersById = members && new Map(members.map(member => [member.id, member]));
+    const membersById = members && new Map(members.map(member => [member.mkId, member]));
     const seenIds = new Set<number>();
     const weights: weight[] = [];
     for (const entry of stored) {
@@ -108,7 +108,7 @@ function loadWeights(members?: Member[]): weight[] {
         const currentWeight = parsed.data;
         if (membersById) {
             const member = membersById.get(currentWeight.id);
-            if (!member || member.genderCode !== currentWeight.genderCode) continue;
+            if (!member || member.genderId !== currentWeight.genderCode) continue;
         }
         seenIds.add(currentWeight.id);
         weights.push(currentWeight);
@@ -140,8 +140,8 @@ function pickWeight(weights: weight[], gender?: number, exclude: number[] = []):
 function initWeights(members: Member[]) {
     const weights = loadWeights(members);
     const storedIds = new Set(weights.map(currentWeight => currentWeight.id));
-    weights.push(...members.filter(member => !storedIds.has(member.id))
-        .map(member => ({ id: member.id, genderCode: member.genderCode, weight: 1 })));
+    weights.push(...members.filter(member => !storedIds.has(member.mkId))
+        .map(member => ({ id: member.mkId, genderCode: member.genderId, weight: 1 })));
     localStorage.setItem("memberWeights", JSON.stringify(weights));
     return weights;
 }

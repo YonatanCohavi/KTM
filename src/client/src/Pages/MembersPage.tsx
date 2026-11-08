@@ -36,13 +36,15 @@ export function MembersPage() {
 
     const query = search.trim().toLocaleLowerCase("he");
     const visibleMembers = members.filter(member =>
-        `${member.firstName} ${member.lastName} ${member.fraction.name}`.toLocaleLowerCase("he").includes(query)
+        `${member.firstname} ${member.lastname} ${member.factionName}`.toLocaleLowerCase("he").includes(query)
     ).sort((first, second) => {
-        const difference = (knowledge.get(first.id) ?? 0) - (knowledge.get(second.id) ?? 0);
+        const difference = (knowledge.get(first.mkId) ?? 0) - (knowledge.get(second.mkId) ?? 0);
         if (sort !== "name" && difference !== 0) return sort === "least" ? difference : -difference;
-        return `${first.firstName} ${first.lastName}`.localeCompare(`${second.firstName} ${second.lastName}`, "he");
+        return `${first.firstname} ${first.lastname}`.localeCompare(`${second.firstname} ${second.lastname}`, "he");
     });
-
+    const memberImageUrl = (memberId: number) => {
+            return `${import.meta.env.VITE_API_BASE_URL}/member/${memberId}/image`;
+    };
     return <section className="h-full overflow-y-auto px-3 py-4 sm:p-6" aria-labelledby="members-heading">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
             <h1 id="members-heading" className="flex items-center gap-2 text-2xl font-semibold"><Users className="size-6" />חברי הכנסת</h1>
@@ -69,16 +71,16 @@ export function MembersPage() {
         {visibleMembers.length === 0 ? <div className="py-12 text-center text-muted-foreground" role="status">לא נמצאו חברים</div> :
             <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {visibleMembers.map(member => {
-                    const score = knowledge.get(member.id) ?? 0;
-                    const name = `${member.firstName} ${member.lastName}`;
-                    return <li key={member.id} className="flex min-w-0 items-center gap-3 rounded-lg border bg-card p-3">
+                    const score = knowledge.get(member.mkId) ?? 0;
+                    const name = `${member.firstname} ${member.lastname}`;
+                    return <li key={member.mkId} className="flex min-w-0 items-center gap-3 rounded-lg border bg-card p-3">
                         <Avatar className="size-16 shrink-0 rounded-md sm:size-20">
-                            <AvatarImage src={member.imageUrl} alt={name} className="object-cover" loading="lazy" />
-                            <AvatarFallback className="rounded-md">{member.firstName[0]}{member.lastName[0]}</AvatarFallback>
+                            <AvatarImage src={memberImageUrl(member.mkId)} alt={name} className="object-cover" loading="lazy" />
+                            <AvatarFallback className="rounded-md">{member.firstname[0]}{member.lastname[0]}</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
                             <h2 className="break-words text-base font-semibold">{name}</h2>
-                            <p className="mb-3 break-words text-sm text-muted-foreground">{member.fraction.name}</p>
+                            <p className="mb-3 break-words text-sm text-muted-foreground">{member.factionName}</p>
                             <div className="mb-1 flex items-center justify-between gap-2 text-xs">
                                 <span>רמת היכרות</span>
                                 <span className="shrink-0 font-semibold tabular-nums">{score}/100</span>

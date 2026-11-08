@@ -9,3 +9,5 @@ public class KnessentMember
     public string Lastname { get; set; } = string.Empty;
     public int GenderId { get; set; }
 }
+
+
