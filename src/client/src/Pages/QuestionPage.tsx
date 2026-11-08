@@ -25,19 +25,62 @@ const QuestionPage = () => {
     const { mutateAsync: fetchNextQuestion } = useNextQuestion({ browserUUID });
     const { mutateAsync: answerQuestionAsync } = useAnswer({ browserUUID });
     const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse>();
+    const [preloadedQuestion, setPreloadedQuestion] = useState<QuestionResponse>();
+    const [isPreloading, setIsPreloading] = useState(false);
+
     useEffect(() => {
         getNextQuestion();
     }, []);
 
-    const getNextQuestion = () => {
-        fetchNextQuestion(undefined, {
-            onSuccess: (data) => {
-                setCurrentQuestion(data.question);
-                setElapsedSeconds(0);
-                setQuestionStartTime(null);
-                setWrongAnswers([]);
-            },
+    const questionImageUrl = (questionId: string, optionIndex?: number) => {
+        if (optionIndex === undefined)
+            return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
+        return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image?optionIndex=${optionIndex}`;
+    };
+
+    const preloadImages = (question: QuestionResponse) => {
+        const mainImg = new Image();
+        mainImg.src = questionImageUrl(question.id);
+
+        question.options.forEach((_, idx) => {
+            const optionImg = new Image();
+            optionImg.src = questionImageUrl(question.id, idx);
         });
+    };
+
+    const preloadNextQuestion = async () => {
+        if (isPreloading || preloadedQuestion) return;
+        setIsPreloading(true);
+        try {
+            const data = await fetchNextQuestion();
+            preloadImages(data.question);
+            setPreloadedQuestion(data.question);
+        } catch (error) {
+            console.error("Failed to preload question:", error);
+        } finally {
+            setIsPreloading(false);
+        }
+    };
+
+    const getNextQuestion = () => {
+        if (preloadedQuestion) {
+            setCurrentQuestion(preloadedQuestion);
+            setPreloadedQuestion(undefined);
+            setElapsedSeconds(0);
+            setQuestionStartTime(null);
+            setWrongAnswers([]);
+            preloadNextQuestion();
+        } else {
+            fetchNextQuestion(undefined, {
+                onSuccess: (data) => {
+                    setCurrentQuestion(data.question);
+                    setElapsedSeconds(0);
+                    setQuestionStartTime(null);
+                    setWrongAnswers([]);
+                    preloadNextQuestion();
+                },
+            });
+        }
     };
     useEffect(() => {
         if (currentQuestion) {
@@ -212,11 +255,6 @@ const QuestionPage = () => {
             <p className="text-2xl font-semibold">מחכה לחברים..</p>
         </div>;
 
-    function questionImageUrl(questionId: string, optionIndex?: number) {
-        if (optionIndex === undefined)
-            return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
-        return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image?optionIndex=${optionIndex}`;
-    }
     return (
         <div className="mx-auto flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4 lg:max-w-3xl lg:px-8 xl:gap-6 xl:py-6">
             {playrsStatus && <PlayerStatsHeader stats={playrsStatus} />}
@@ -275,11 +313,11 @@ const QuestionPage = () => {
                 <div
                     dir="auto"
                     key={num.id}
-                    className={cn("floating-number text-2xl", num.value > 0 ? "" : "text-red-500")}
+                    className={cn("floating-number", num.value > 0 ? "text-green-500" : "text-red-500")}
                     style={{ left: num.x, top: num.y }}
                     onAnimationEnd={() => handleAnimationEnd(num.id)}
                 >
-                    <span className="size-4 font-bold rounded-full">
+                    <span className="font-bold text-lg sm:text-xl lg:text-2xl drop-shadow-lg">
                         {num.value > 0 ? `+${num.value}` : num.value}
                     </span>
                 </div>
