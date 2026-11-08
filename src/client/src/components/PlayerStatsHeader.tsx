@@ -1,19 +1,20 @@
 import { LevelIcon } from "@/components/LevelIcon";
 import { Progress } from "@/components/ui/progress";
-import { getLevelName, getTotalXPForLevel } from "@/services/statsService";
+import type { UserStats } from "@/services/question-api";
+import { getLevelName } from "@/services/statsService";
 import { Flame, Trophy } from "lucide-react";
+import { useMemo } from "react";
 
 interface PlayerStatsHeaderProps {
-    xp: number;
-    level: number;
-    streak: number;
+    stats: UserStats;
 }
 
-const PlayerStatsHeader = ({ xp, level, streak }: PlayerStatsHeaderProps) => {
-    const currentLevelXP = getTotalXPForLevel(level);
-    const nextLevelXP = getTotalXPForLevel(level + 1);
+const PlayerStatsHeader = ({ stats }: PlayerStatsHeaderProps) => {
+    console.log(stats);
+    const { xp, level, streak } = useMemo(() => stats, [stats]);
+    const nextLevelXP = stats.level.nextLevelXp || 0;
+    const currentLevelXP = stats.level.currentLevelXp || 0;
     const progress = (xp - currentLevelXP) / (nextLevelXP - currentLevelXP) * 100;
-
     return (
         <div className="shrink-0 space-y-2">
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3 text-base font-semibold sm:text-xl">
@@ -34,10 +35,10 @@ const PlayerStatsHeader = ({ xp, level, streak }: PlayerStatsHeaderProps) => {
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                        <span className="text-sm font-medium text-muted-foreground">{getLevelName(level)}</span>
+                    <span className="text-sm font-medium text-muted-foreground">{getLevelName(level.level)}</span>
                     <div className="flex min-h-7 items-center gap-2">
-                        <LevelIcon level={level} size={20} />
-                        <span className="tabular-nums">{level.toLocaleString()}</span>
+                        <LevelIcon level={level.level} size={20} />
+                        <span className="tabular-nums">{level.level.toLocaleString()}</span>
                     </div>
                 </div>
             </div>
@@ -47,3 +48,4 @@ const PlayerStatsHeader = ({ xp, level, streak }: PlayerStatsHeaderProps) => {
 };
 
 export { PlayerStatsHeader };
+

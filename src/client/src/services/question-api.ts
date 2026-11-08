@@ -30,19 +30,20 @@ export function useNextQuestion({ browserUUID }: { browserUUID: string }) {
     });
 }
 
-
+const userStats = z.object({
+    name: z.string(),
+    level: z.object({
+        level: z.number(),
+        currentLevelXp: z.number(),
+        nextLevelXp: z.number()
+    }),
+    xp: z.number(),
+    streak: z.number()
+});
+export type UserStats = z.infer<typeof userStats>;
 const AnswerResponse = z.object({
     isCorrect: z.boolean(),
-    userStats: z.object({
-        name: z.string(),
-        level: z.object({
-            level: z.number(),
-            currentLevelXp: z.number(),
-            nextLevelXp: z.number()
-        }),
-        xp: z.number(),
-        streak: z.number()
-    })
+    userStats: userStats
 });
 export type AnswerResponse = z.infer<typeof AnswerResponse>;
 export function useAnswer({ browserUUID }: { browserUUID: string }) {

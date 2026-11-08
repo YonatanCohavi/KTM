@@ -46,7 +46,16 @@ public class AnswerQuestionCommandHandler(
         }
 
         var isCorrect = command.AnsweredMemberId == question.CorrectMemberId;
-        await browserWeightCache.AdjustWeightAsync(question.UserId, command.AnsweredMemberId, isCorrect);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await browserWeightCache.AdjustWeightAsync(question.UserId, command.AnsweredMemberId, isCorrect);
+            }
+            catch
+            {
+            }
+        });
 
         var currentStreak = memberSessionManager.RegisterAnswer(question.UserId, isCorrect);
         int userXp;

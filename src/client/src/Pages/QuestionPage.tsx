@@ -5,10 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/userContext";
 import { cn } from "@/lib/utils";
-import { syncPlayerToLeaderboard } from "@/services/leaderboardService";
-import { useAnswer, useNextQuestion, type QuestionResponse } from "@/services/question-api";
-import { setAnswer } from "@/services/questionService";
-import { loadStats, updateStats } from "@/services/statsService";
+import { useAnswer, useNextQuestion, type QuestionResponse, type UserStats } from "@/services/question-api";
+import { loadStats } from "@/services/statsService";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -22,17 +20,20 @@ interface FloatingNumber {
 
 const QuestionPage = () => {
     const { id: browserUUID, name: playerName } = useUser();
-    const { mutateAsync: fetchNextQuestion } = useNextQuestion({browserUUID});
-    const { mutateAsync: answerQuestionAsync } = useAnswer({browserUUID});
+    const { mutateAsync: fetchNextQuestion } = useNextQuestion({ browserUUID });
+    const { mutateAsync: answerQuestionAsync } = useAnswer({ browserUUID });
     const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse>();
     useEffect(() => {
-        handleGetNextQuestion();
+        getNextQuestion();
     }, []);
 
-    const handleGetNextQuestion = () => {
+    const getNextQuestion = () => {
         fetchNextQuestion(undefined, {
             onSuccess: (data) => {
                 setCurrentQuestion(data.question);
+                setElapsedSeconds(0);
+                setQuestionStartTime(null);
+                setWrongAnswers([]);
             },
         });
     };
@@ -41,17 +42,17 @@ const QuestionPage = () => {
             console.log("Current question:", currentQuestion);
         }
     }, [currentQuestion]);
-    useEffect(() => {
-        const handleFocus = () => {
-            setPlayerStatus(loadStats());
-        };
+    // useEffect(() => {
+    //     const handleFocus = () => {
+    //         setPlayerStatus(loadStats());
+    //     };
 
-        window.addEventListener('focus', handleFocus);
+    //     window.addEventListener('focus', handleFocus);
 
-        return () => {
-            window.removeEventListener('focus', handleFocus);
-        };
-    }, []);
+    //     return () => {
+    //         window.removeEventListener('focus', handleFocus);
+    //     };
+    // }, []);
 
     const fireworksRef = useRef<FireworksHandlers>(null)
     const [showFireworks, setShowFireworks] = useState(false);
@@ -60,7 +61,7 @@ const QuestionPage = () => {
 
     // const [question, setQuestion] = useState<Question | undefined>(undefined);
     // const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
-    const [playrsStatus, setPlayerStatus] = useState(loadStats());
+    const [playrsStatus, setPlayerStatus] = useState<UserStats>();
     const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [imageError, setImageError] = useState(false);
@@ -120,7 +121,7 @@ const QuestionPage = () => {
     //     setImageAttempt(0);
     // }
 
-        
+
     // useEffect(() => {
     //     if (!question)
     //         return;
@@ -133,9 +134,14 @@ const QuestionPage = () => {
     async function answer(e: React.MouseEvent, optionId: number) {
         if (!currentQuestion)
             return;
-        const {isCorrect} = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
-        if (!isCorrect){
-             setWrongAnswers([...wrongAnswers, optionId]);
+        const { isCorrect, userStats } = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
+        setPlayerStatus(userStats);
+        if (!isCorrect) {
+            setWrongAnswers([...wrongAnswers, optionId]);
+        }
+        if (wrongAnswers.length >= 3 || isCorrect) {
+            getNextQuestion();
+            return;
         }
     }
     // function answer(e: React.MouseEvent, optionId: number) {
@@ -200,12 +206,12 @@ const QuestionPage = () => {
     function imageURL(memberId: number) {
         return `${import.meta.env.VITE_API_BASE_URL}/member/${memberId}/image`;
     }
-     function questionImageUrl(questionId: string) {
+    function questionImageUrl(questionId: string) {
         return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
     }
     return (
         <div className="mx-auto flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4 lg:max-w-3xl lg:px-8 xl:gap-6 xl:py-6">
-            <PlayerStatsHeader xp={playrsStatus.xp} level={playrsStatus.level} streak={playrsStatus.streak} />
+            {playrsStatus && <PlayerStatsHeader stats={playrsStatus} />}
             <TimeBonusMeter elapsedSeconds={elapsedSeconds} />
             <div className="@container-[size] flex min-h-0 flex-1 items-center justify-center">
                 <Avatar
