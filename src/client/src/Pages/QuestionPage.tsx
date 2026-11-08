@@ -5,9 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/userContext";
 import { cn } from "@/lib/utils";
-import { useAnswer, useNextQuestion, type QuestionResponse, type UserStats } from "@/services/question-api";
-import { loadStats } from "@/services/statsService";
-import { userQueries } from "@/services/user-api";
+import { useAnswer, useNextQuestion, type QuestionResponse } from "@/services/question-api";
+import { userQueries, UserStats } from "@/services/user-api";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle, RotateCcw } from "lucide-react";
@@ -32,10 +31,11 @@ const QuestionPage = () => {
         getNextQuestion();
     }, []);
 
-    const questionImageUrl = (questionId: string, optionIndex?: number) => {
-        if (optionIndex === undefined)
-            return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
-        return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image?optionIndex=${optionIndex}`;
+    const questionImageUrl = (questionId: string) => {
+        return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
+    };
+     const memberImageUrl = (memberId: number) => {
+            return `${import.meta.env.VITE_API_BASE_URL}/member/${memberId}/image`;
     };
 
     const preloadMainImage = (question: QuestionResponse) => {
@@ -43,12 +43,19 @@ const QuestionPage = () => {
         mainImg.src = questionImageUrl(question.id);
     };
 
+     const preLoadMemberImages = (membersIds: number[] = []) => {
+        membersIds.forEach(memberId => {
+            const img = new Image();
+            img.src = memberImageUrl(memberId);
+        });
+    };
     const preloadNextQuestion = async () => {
         if (isPreloading || preloadedQuestion) return;
         setIsPreloading(true);
         try {
             const data = await fetchNextQuestion();
             preloadMainImage(data.question);
+            preLoadMemberImages(data.question.options.map(option => option.id));
             setPreloadedQuestion(data.question);
         } catch (error) {
             console.error("Failed to preload question:", error);
@@ -106,7 +113,7 @@ const QuestionPage = () => {
     }, [fetchedUserStats]);
     // const [question, setQuestion] = useState<Question | undefined>(undefined);
     // const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
-    const [playrsStatus, setPlayerStatus] = useState<UserStats>();
+    const [playerStatus, setPlayerStatus] = useState<UserStats>();
     const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [imageError, setImageError] = useState(false);
@@ -181,6 +188,12 @@ const QuestionPage = () => {
             return;
         const { isCorrect, userStats, xpGained } = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
         console.log({ isCorrect, userStats });
+        if (playerStatus?.level.level && userStats.level.level > playerStatus.level.level) {
+            setShowFireworks(true);
+            setTimeout(() => {
+                setShowFireworks(false);
+            }, 5000);
+        }
         setPlayerStatus(userStats);
         showScore(e, xpGained);
         if (wrongAnswers.length >= 3 || isCorrect) {
@@ -243,7 +256,9 @@ const QuestionPage = () => {
     //         <p>לא הצלחנו לטעון את נתוני החברים.</p>
     //         <Button onClick={() => { void refetchMembers(); }}>נסו שוב</Button>
     //     </div>;
-
+function memberImage(memberid: number) {
+    return `/path/to/member/images/${memberid}.png`;
+}
     if (!currentQuestion)
         return <div className="flex h-full flex-col justify-center items-center gap-1.5 waiting-chairs">
             <div className="text-5xl ">🪑 🪑 🪑</div>
@@ -252,7 +267,7 @@ const QuestionPage = () => {
 
     return (
         <div className="mx-auto flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4 lg:max-w-3xl lg:px-8 xl:gap-6 xl:py-6">
-            {playrsStatus && <PlayerStatsHeader stats={playrsStatus} />}
+            {playerStatus && <PlayerStatsHeader stats={playerStatus} />}
             <TimeBonusMeter elapsedSeconds={elapsedSeconds} />
             <div className="@container-[size] flex min-h-0 flex-1 items-center justify-center">
                 <Avatar
@@ -298,7 +313,7 @@ const QuestionPage = () => {
                         <div className={cn("w-0 overflow-hidden transition-all flex items-center justify-center", { "w-11 sm:w-16 lg:w-20": wrongAnswers.includes(option.id) })}>
                             <Avatar className="size-11 sm:size-16 lg:size-20 shrink-0">
                                 {wrongAnswers.includes(option.id) && (
-                                    <AvatarImage src={questionImageUrl(currentQuestion.id, idx)} alt="User Avatar" className="object-cover" />
+                                    <AvatarImage src={memberImageUrl(option.id)} alt="User Avatar" className="object-cover" />
                                 )}
                                 <AvatarFallback></AvatarFallback>
                             </Avatar>

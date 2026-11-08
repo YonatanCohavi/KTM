@@ -92,11 +92,12 @@ public class AnswerQuestionCommandHandler(
         {
             IsCorrect = isCorrect,
             XpGained = xpGained,
+            
             UserStats = new UserStats
             {
                 CurrentLevelXp = userXp - level.CurrentLevelXp,
                 Level = level,
-                Streak = currentStreak      ,
+                Streak = currentStreak,
                 
             }
         };
