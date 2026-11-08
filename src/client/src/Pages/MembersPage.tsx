@@ -1,18 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Search, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useMembersQuery } from "@/services/membersService";
 import { loadMemberKnowledge } from "@/services/questionService";
+import { useQuery } from "@tanstack/react-query";
+import { userQueries } from "@/services/user-api";
+import { useUser } from "@/contexts/userContext";
 
 type sortMethod = 'name' | 'least' | 'most';
 export function MembersPage() {
+    const { id: browserUUID } = useUser();
     const { data: members, isError, refetch } = useMembersQuery();
-    const [knowledge, setKnowledge] = useState(loadMemberKnowledge);
+    const { data: weights} = useQuery(userQueries.weights(browserUUID));
+     const [knowledge, setKnowledge] = useState(loadMemberKnowledge);
+    const knowledge2 = useMemo(() => {
+        const k = Object.entries(weights ?? {}).map(x => ([x[0],Math.round(Math.max(0, Math.min(1, 1 - x[1])) * 100)]));
+        console.log(k,weights);
+        return k;
+    }, [weights]);
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState<sortMethod>("most");
-
     useEffect(() => {
         const refreshKnowledge = () => setKnowledge(loadMemberKnowledge());
         window.addEventListener("focus", refreshKnowledge);

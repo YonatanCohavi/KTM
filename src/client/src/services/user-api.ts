@@ -18,6 +18,7 @@ export type UserStats = z.infer<typeof UserStats>;
 export const userKeys = {
     all: ["user"] as const,
     stats: (id: string) => [...userKeys.all, "stats", id] as const,
+    weights: (id: string) => [...userKeys.all, "weights", id] as const,
 }
 
 export const userQueries = {
@@ -26,6 +27,13 @@ export const userQueries = {
         queryFn: async () => {
             const response = await api.get(`/user/${id}/stats`)
             return UserStats.parse(response.data)
+        }
+    }),
+    weights: (id: string) => queryOptions({
+        queryKey: userKeys.weights(id),
+        queryFn: async () => {
+            const response = await api.get(`/user/${id}/weights`)
+            return z.record(z.string(), z.number()).parse(response.data);
         }
     })
 }

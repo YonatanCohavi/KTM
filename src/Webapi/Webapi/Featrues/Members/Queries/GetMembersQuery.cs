@@ -11,23 +11,19 @@ public class GetMembersQueryHandler(IKnessetAPI knessetAPI, IMemoryCache memoryC
 {
     public async Task<FullMemberDetails[]> ExecuteAsync(GetMembersQuery command, CancellationToken ct)
     {
-        return await memoryCache.GetOrCreateAsync("full_members", async entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
-            var members = await knessetAPI.GetKnessetMembersAsync(ct);
-            var fractions = await knessetAPI.GetFactionsAsync(ct);
+        var members = await knessetAPI.GetKnessetMembersAsync(ct);
+        var fractions = await knessetAPI.GetFactionsAsync(ct);
 
-            var fractionsById = fractions.ToDictionary(f => f.Id, f => f.Name);
-            return members.Select(m => new FullMemberDetails
-            {
-                MkId = m.MkId,
-                FactionId = m.FactionId,
-                FactionName = fractionsById.GetValueOrDefault(m.FactionId, string.Empty),
-                Firstname = m.Firstname,
-                Lastname = m.Lastname,
-                GenderId = m.GenderId
-            }).ToArray();
-        }) ?? [];
+        var fractionsById = fractions.ToDictionary(f => f.Id, f => f.Name);
+        return members.Select(m => new FullMemberDetails
+        {
+            MkId = m.MkId,
+            FactionId = m.FactionId,
+            FactionName = fractionsById.GetValueOrDefault(m.FactionId, string.Empty),
+            Firstname = m.Firstname,
+            Lastname = m.Lastname,
+            GenderId = m.GenderId
+        }).ToArray();
 
     }
 }
