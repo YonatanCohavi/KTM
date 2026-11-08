@@ -98,52 +98,6 @@ export function getLevelName(level: number): string {
   return LEVEL_NAMES_HE[level - 1];
 }
 const STORAGE_KEY = "playerStats";
-export function updateStats(
-  player: PlayerStats,
-  options: UpdateOptions
-): UpdateRespose {
-  const now = new Date();
-  const { responseTimeSec, basePoints, penalizeStreak = false } = options;
-
-  // --- 1. Handle streaks ---
-  const hoursSinceLastPlay =
-    (now.getTime() - player.lastPlay.getTime()) / (1000 * 60 * 60);
-  let streak = hoursSinceLastPlay <= 24 ? player.streak + 1 : 1;
-
-  if (basePoints < 0 && penalizeStreak) {
-    streak = 0;
-  }
-
-  // --- 2. Multipliers ---
-  const streakMultiplier = 1 + streak * 0.05;
-  //const luckyBoost = basePoints > 0 && Math.random() < 0.1 ? 2 : 1;
-  const luckyBoost = 1;
-  const timeBonusMultiplier = getTimeBonusMultiplier(responseTimeSec);
-  const totalChange = Math.round(basePoints * streakMultiplier * luckyBoost * timeBonusMultiplier);
-
-  // --- 3. Level progression ---
-  const currentLevelXP = getTotalXPForLevel(player.level);
-  const nextLevelXP = getTotalXPForLevel(player.level + 1);
-  let xp = player.xp + totalChange;
-
-  // Prevent dropping below start of current level
-  xp = Math.max(currentLevelXP, xp);
-
-  // Level up or down if needed
-  let level = player.level;
-  if (xp >= nextLevelXP) {
-    level++;
-  }
-
-  // --- 4. Save and return updated state ---
-  const updated: PlayerStats = { xp, level, streak, lastPlay: now };
-  saveStats(updated);
-  return {
-    stats: updated,
-    leveledUp: level > player.level,
-    xpGained: totalChange
-  };
-}
 
 export function getTimeBonusMultiplier(responseTimeSec?: number): number {
   if (responseTimeSec === undefined) return 1;
@@ -153,28 +107,7 @@ export function getTimeBonusMultiplier(responseTimeSec?: number): number {
   return 1; // no bonus
 }
 
-/**
- * XP required for a given level
- * (total cumulative XP, not per level)
- */
-export function getTotalXPForLevel(level: number): number {
-  if (level <= 1) return 0;
-  let total = 0;
-  for (let i = 1; i < level; i++) {
-    total += Math.floor(100 * Math.pow(1.2, i - 1));
-  }
-  return total;
-}
 
-/**
- * Save & load helpers
- */
-export function saveStats(stats: PlayerStats): void {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ ...stats, lastPlay: stats.lastPlay.toISOString() })
-  );
-}
 
 export function loadStats(): PlayerStats {
   const data = localStorage.getItem(STORAGE_KEY);

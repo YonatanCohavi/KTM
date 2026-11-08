@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Webapi.Featrues.Questions.Commands;
-using Webapi.Featrues.User;
+using Webapi.Featrues.Users;
 
 namespace Webapi.Featrues.Questions.Endpoints;
 

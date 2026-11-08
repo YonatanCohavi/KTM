@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Cryptography.Xml;
 using Webapi.Featrues.Members;
-using Webapi.Featrues.User;
+using Webapi.Featrues.Users;
 
 namespace Webapi.Featrues.Questions.Commands;
 

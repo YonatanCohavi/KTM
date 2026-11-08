@@ -1,4 +1,4 @@
-﻿namespace Webapi.Featrues.Members.Endpoints;
+﻿namespace Webapi.Featrues.Members;
 
 public class FullMemberDetails
 {

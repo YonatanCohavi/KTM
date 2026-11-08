@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { resetStats, loadStats } from "@/services/statsService";
-import { clearLocalLeaderboard, syncPlayerToLeaderboard } from "@/services/leaderboardService";
 import { useUser } from "@/contexts/userContext";
 import { Settings, Trash2, User } from "lucide-react";
 import { useRef, useState } from "react";
@@ -12,34 +11,35 @@ export function SettingsPage({ onRestart }: { onRestart: () => void }) {
     const [error, setError] = useState("");
     const [nameSaved, setNameSaved] = useState(false);
 
-    async function saveName() {
-        const newName = nameInput.current?.value.trim() || "";
-        if (newName.length > 0 && newName.length <= 50) {
-            setName(newName);
+    // async function saveName() {
+    //     const newName = nameInput.current?.value.trim() || "";
+    //     if (newName.length > 0 && newName.length <= 50) {
+    //         setName(newName);
             
-            // Sync immediately to leaderboard
-            const stats = loadStats();
-            await syncPlayerToLeaderboard(browserUUID, newName, stats.level, stats.xp, stats.streak);
+    //         // Sync immediately to leaderboard
+    //         const stats = loadStats();
+    //         await syncPlayerToLeaderboard(browserUUID, newName, stats.level, stats.xp, stats.streak);
             
-            setNameSaved(true);
-            setTimeout(() => setNameSaved(false), 2000);
-        }
-    }
-
-    async function restartGame() {
-        let stats;
-        try {
-            stats = resetStats();
-            clearLocalLeaderboard();
-            localStorage.removeItem("memberWeights");
-        } catch {
-            setError("לא הצלחנו למחוק את הנתונים. נסו שוב.");
-            return;
-        }
-        await syncPlayerToLeaderboard(browserUUID, name, stats.level, stats.xp, stats.streak);
-        confirmation.current?.close();
-        onRestart();
-    }
+    //         setNameSaved(true);
+    //         setTimeout(() => setNameSaved(false), 2000);
+    //     }
+    // }
+ async function saveName() {}
+ async function restartGame() {}
+    // async function restartGame() {
+    //     let stats;
+    //     try {
+    //         stats = resetStats();
+    //         clearLocalLeaderboard();
+    //         localStorage.removeItem("memberWeights");
+    //     } catch {
+    //         setError("לא הצלחנו למחוק את הנתונים. נסו שוב.");
+    //         return;
+    //     }
+    //     await syncPlayerToLeaderboard(browserUUID, name, stats.level, stats.xp, stats.streak);
+    //     confirmation.current?.close();
+    //     onRestart();
+    // }
 
     return <section className="h-full overflow-y-auto px-3 py-4 sm:p-6 lg:max-w-2xl lg:mx-auto" aria-labelledby="settings-heading" dir="rtl">
         <h1 id="settings-heading" className="mb-6 flex items-center gap-2 text-2xl font-semibold"><Settings className="size-6" />הגדרות</h1>

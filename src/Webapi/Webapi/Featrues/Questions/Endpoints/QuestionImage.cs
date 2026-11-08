@@ -4,7 +4,7 @@ using Webapi.Featrues.Knesset.Dto;
 using Webapi.Featrues.Members.Queries;
 using Webapi.Featrues.Questions.Queries;
 
-namespace Webapi.Featrues.Members.Endpoints;
+namespace Webapi.Featrues.Questions.Endpoints;
 
 public record GetQuestionImageRequest(Guid QuestionId, int? OptionIndex = null);
 public class OptionImage : Endpoint<GetQuestionImageRequest>

@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
-using Webapi.Featrues.User.Queries;
+using Webapi.Featrues.Users.Queries;
 
-namespace Webapi.Featrues.User.Endpoints;
+namespace Webapi.Featrues.Users.Endpoints;
 
 public record GetStatsRequest(string UserId);
 public class GetStats : Endpoint<GetStatsRequest, UserStats>

@@ -1,42 +1,30 @@
-import { useEffect, useState } from "react";
-import { getLeaderboard, getPlayerRank, type LeaderboardEntry } from "@/services/leaderboardService";
-import { useUser } from "@/contexts/userContext";
-import { getLevelName } from "@/services/statsService";
-import { Trophy, TrendingUp } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useUser } from "@/contexts/userContext";
 import { cn } from "@/lib/utils";
+import { getLevelName } from "@/services/statsService";
+import { userQueries } from "@/services/user-api";
+import { useQuery } from "@tanstack/react-query";
+import { TrendingUp, Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
 
+type LeaderboardEntry = {
+  id: string;
+  browserUUID: string;
+  name: string;
+  level: number;
+  xp: number;
+  streak: number;
+}
 export function LeaderboardPage() {
   const { id: browserUUID } = useUser();
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const {data: leaderboardData ,isLoading,isError,error } = useQuery(userQueries.leaderboard())
+  // const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [playerRank, setPlayerRank] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [isLoading, setIsLoading] = useState(true);
+  // const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadLeaderboard() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const [entries, rank] = await Promise.all([
-          getLeaderboard(100),
-          getPlayerRank(browserUUID),
-        ]);
-        setLeaderboard(entries);
-        setPlayerRank(rank);
-      } catch (err) {
-        console.error("Failed to load leaderboard:", err);
-        setError("לא הצלחנו לטעון את דירוג הנקודות");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadLeaderboard();
-    const interval = setInterval(loadLeaderboard, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
-  }, [browserUUID]);
-
+ 
+useEffect(() => {console.log(leaderboardData)},[leaderboardData]);
   return (
     <section
       className="h-full overflow-y-auto px-3 py-4 sm:p-6 lg:max-w-2xl lg:mx-auto"
@@ -80,61 +68,61 @@ export function LeaderboardPage() {
       {/* Error State */}
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-          <p className="text-sm text-destructive">{error}</p>
+          <p className="text-sm text-destructive">{error.message}</p>
         </div>
       )}
 
       {/* Leaderboard Table */}
-      {!isLoading && leaderboard.length > 0 && (
+      {!isLoading &&  leaderboardData && leaderboardData.length > 0 && (
         <div className="border rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-right font-semibold">דירוג</th>
-                <th className="px-4 py-3 text-right font-semibold">שם</th>
-                <th className="px-4 py-3 text-right font-semibold">רמה</th>
-                <th className="px-4 py-3 text-right font-semibold">נקודות</th>
-                <th className="px-4 py-3 text-right font-semibold">סדרה</th>
+                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">דירוג</th>
+                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">שם</th>
+                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">רמה</th>
+                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">נקודות</th>
+                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">סדרה</th>
               </tr>
             </thead>
             <tbody>
-              {leaderboard.map((entry, index) => (
+              {leaderboardData.map((entry, index) => (
                 <tr
-                  key={entry.id}
+                  key={entry.userId}
                   className={cn(
                     "border-b transition-colors hover:bg-muted/50",
-                    entry.browserUUID === browserUUID && "bg-primary/10 font-semibold"
+                    entry.userId === browserUUID && "bg-primary/10 font-semibold"
                   )}
                 >
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center gap-2 justify-end">
-                      {index === 0 && <Trophy className="size-4 text-yellow-500" />}
-                      {index === 1 && <Trophy className="size-4 text-gray-400" />}
-                      {index === 2 && <Trophy className="size-4 text-orange-600" />}
-                      <span className="font-semibold">
+                  <td className="px-2 py-3 text-right sm:px-4">
+                    <div className="flex items-center gap-1 justify-end">
+                      {index === 0 && <Trophy className="size-4 text-yellow-500 shrink-0" />}
+                      {index === 1 && <Trophy className="size-4 text-gray-400 shrink-0" />}
+                      {index === 2 && <Trophy className="size-4 text-orange-600 shrink-0" />}
+                      <span className="font-semibold text-sm">
                         #{index + 1}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="truncate block max-w-xs">
+                  <td className="px-2 py-3 text-right sm:px-4">
+                    <span className="truncate block max-w-xs text-sm">
                       {entry.name || "Anonymous"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-2 py-3 text-right sm:px-4">
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-semibold">{entry.level}</span>
+                      <span className="font-semibold text-sm">{entry.level}</span>
                       <span className="text-xs text-muted-foreground">
                         {getLevelName(entry.level)}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold">
+                  <td className="px-2 py-3 text-right sm:px-4 font-semibold text-sm">
                     {entry.xp.toLocaleString("he-IL")}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">
-                      🔥 {entry.streak}
+                  <td className="px-2 py-3 text-right sm:px-4">
+                    <span className="inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">
+                      🔥 <span className="tabular-nums">{entry.streak}</span>
                     </span>
                   </td>
                 </tr>
@@ -145,7 +133,7 @@ export function LeaderboardPage() {
       )}
 
       {/* Empty State */}
-      {!isLoading && leaderboard.length === 0 && !error && (
+      {!isLoading && leaderboardData && leaderboardData.length === 0 && !isError && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Trophy className="size-12 text-muted-foreground/30 mb-4" />
           <p className="text-muted-foreground">

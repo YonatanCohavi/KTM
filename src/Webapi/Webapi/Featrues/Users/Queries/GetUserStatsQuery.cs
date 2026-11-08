@@ -1,8 +1,9 @@
 ﻿
 using FastEndpoints;
 using Webapi.Featrues.Questions;
+using Webapi.Featrues.Users;
 
-namespace Webapi.Featrues.User.Queries;
+namespace Webapi.Featrues.Users.Queries;
 
 public record GetUserStatsQuery(string UserId) : ICommand<UserStats>;
 public class GetUserStatsQueryHandler(ILeaderboardXpStore leaderboardXpStore,IXPCalculator xpCalculator) : ICommandHandler<GetUserStatsQuery, UserStats>

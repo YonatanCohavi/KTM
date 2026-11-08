@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Caching.Memory;
 using Webapi.Featrues.Knesset;
 using Webapi.Featrues.Knesset.Dto;
-using Webapi.Featrues.Members.Endpoints;
 
 namespace Webapi.Featrues.Members.Queries;
 
