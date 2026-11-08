@@ -25,7 +25,7 @@ public record GenerateQuestionCommandWithWeights(
     Dictionary<int, double>? MemberWeights
 ) : ICommand<QuizQuestion>;
 
-public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandler> logger,  IKnessetAPI knessetAPI, IBrowserWeightCache weightCache, IMemoryCache memoryCache) : ICommandHandler<GenerateQuestionCommand, QuizQuestion>
+public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandler> logger, IKnessetAPI knessetAPI, IBrowserWeightCache weightCache, IMemoryCache memoryCache) : ICommandHandler<GenerateQuestionCommand, QuizQuestion>
 {
     private readonly Random _random = Random.Shared;
     private readonly WeightedRandomSelector _selector = new();
@@ -65,13 +65,15 @@ public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandl
                 Name = $"{m.Firstname} {m.Lastname}"
             })]
         };
+        var correntMemberIndex = question.Options.ToList().FindIndex(o => o.Id == correctMember.MkId);
         if (logger.IsEnabled(LogLevel.Information))
         {
             logger.LogInformation(
-                "Generated question {QuestionId} for user {UserId} with correct member {CorrectMemberId}",
+                "Generated question {QuestionId} for user {UserId} with correct member {CorrectMemberId} {CorrectMemberIndex}",
                 question.Id,
                 command.UserId,
-                correctMember.MkId);
+                correctMember.MkId,
+                correntMemberIndex + 1);
         }
         using var entiry = memoryCache.CreateEntry(CachedQuestion.CacheKey(question.Id))
             .SetValue(new CachedQuestion

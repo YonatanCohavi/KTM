@@ -3,15 +3,14 @@ import { Progress } from "@/components/ui/progress";
 import type { UserStats } from "@/services/question-api";
 import { getLevelName } from "@/services/statsService";
 import { Flame, Trophy } from "lucide-react";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 
 interface PlayerStatsHeaderProps {
     stats: UserStats;
 }
 
-const PlayerStatsHeader = ({ stats }: PlayerStatsHeaderProps) => {
-    console.log(stats);
-    const { xp, level, streak } = useMemo(() => stats, [stats]);
+const PlayerStatsHeader = memo(({ stats }: PlayerStatsHeaderProps) => {
+    const { currentLevelXp: xp, level, streak } = useMemo(() => stats, [stats]);
     const nextLevelXP = stats.level.nextLevelXp || 0;
     const currentLevelXP = stats.level.currentLevelXp || 0;
     const progress = (xp - currentLevelXP) / (nextLevelXP - currentLevelXP) * 100;
@@ -45,7 +44,7 @@ const PlayerStatsHeader = ({ stats }: PlayerStatsHeaderProps) => {
             <Progress value={progress} />
         </div>
     );
-};
+});
 
 export { PlayerStatsHeader };
 

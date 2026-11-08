@@ -1,36 +1,28 @@
 ﻿namespace Webapi.Featrues.Questions;
 
-public record  struct LevelDetails(int Level, int CurrentLevelXp, int NextLevelXp);
+public record struct LevelDetails(int Level, int CurrentLevelXp, int NextLevelXp);
 public interface IXPCalculator
 {
     LevelDetails GetLevelByXp(int xp);
-    //LevelDetails GetLevelDetails(int level);
 }
 
 public class XPCalculator : IXPCalculator
 {
     public LevelDetails GetLevelByXp(int xp)
     {
-        var total = 0;
+        var safeXp = Math.Max(0, xp);
         var level = 1;
-        while (xp > total)
+        var currentLevelXp = 0;
+        var nextLevelXp = (int)Math.Floor(100 * Math.Pow(1.2, level - 1));
+
+        while (safeXp >= nextLevelXp)
         {
-            var levelXp = (int)Math.Floor(100 * Math.Pow(1.2, level - 1));
-            total += levelXp;
+            currentLevelXp = nextLevelXp;
             level++;
+            nextLevelXp += (int)Math.Floor(100 * Math.Pow(1.2, level - 1));
         }
-        var nextLevelXp = (int)Math.Floor(100 * Math.Pow(1.2, level));
-        return new LevelDetails(level, total, nextLevelXp);
+
+        return new LevelDetails(level, currentLevelXp, nextLevelXp);
     }
-    public LevelDetails GetLevelDetails(int level)
-    {
-        var total = 0;
-        for (int i = 1; i < level; i++)
-        {
-            var levelXp = (int)Math.Floor(100 * Math.Pow(1.2, i - 1));
-            total += levelXp;
-        }
-        var nextLevelXp = (int)Math.Floor(100 * Math.Pow(1.2, level));
-        return new LevelDetails(level, total, nextLevelXp);
-    }
+
 }

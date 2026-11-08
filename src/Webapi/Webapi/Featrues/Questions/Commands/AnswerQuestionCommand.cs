@@ -30,6 +30,7 @@ public class AnswerQuestionCommandHandler(
             memoryCache.Remove(cacheKey);
 
             var penaltyXp = memberSessionManager.GetWrongPenelty();
+
             var xpAfterPenalty = await leaderboardXpStore.UpdateXpAsync(question.UserId, penaltyXp, ct);
             var currentLevel = xPCalculator.GetLevelByXp(xpAfterPenalty);
 
@@ -38,7 +39,7 @@ public class AnswerQuestionCommandHandler(
                 IsCorrect = false,
                 UserStats = new UserStats
                 {
-                    Xp = xpAfterPenalty,
+                    CurrentLevelXp = xpAfterPenalty - currentLevel.CurrentLevelXp,
                     Level = currentLevel,
                     Streak = streak
                 }
@@ -55,7 +56,7 @@ public class AnswerQuestionCommandHandler(
             catch
             {
             }
-        });
+        }, ct);
 
         var currentStreak = memberSessionManager.RegisterAnswer(question.UserId, isCorrect);
         int userXp;
@@ -89,7 +90,7 @@ public class AnswerQuestionCommandHandler(
             IsCorrect = isCorrect,
             UserStats = new UserStats
             {
-                Xp = userXp,
+                CurrentLevelXp = userXp - level.CurrentLevelXp,
                 Level = level,
                 Streak = currentStreak
             }

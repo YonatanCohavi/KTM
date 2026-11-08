@@ -30,9 +30,8 @@ public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator 
 
     private int ApplyDelta(int currentXp, int xpDelta)
     {
-        var nextXp = Math.Max(0, currentXp + xpDelta);
-        var currentLevel = xpCalculator.GetLevelByXp(currentXp);
-        return Math.Min(currentLevel.CurrentLevelXp, nextXp);
+        var level = xpCalculator.GetLevelByXp(currentXp);
+        return Math.Max(level.CurrentLevelXp, currentXp + xpDelta);
     }
 
     private void QueueFlush(string browserUuid)

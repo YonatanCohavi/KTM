@@ -37,7 +37,7 @@ const userStats = z.object({
         currentLevelXp: z.number(),
         nextLevelXp: z.number()
     }),
-    xp: z.number(),
+    currentLevelXp: z.number(),
     streak: z.number()
 });
 export type UserStats = z.infer<typeof userStats>;

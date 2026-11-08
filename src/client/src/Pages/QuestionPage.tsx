@@ -135,6 +135,7 @@ const QuestionPage = () => {
         if (!currentQuestion)
             return;
         const { isCorrect, userStats } = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
+        console.log({ isCorrect, userStats });
         setPlayerStatus(userStats);
         if (!isCorrect) {
             setWrongAnswers([...wrongAnswers, optionId]);
