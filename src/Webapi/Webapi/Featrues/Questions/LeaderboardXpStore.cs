@@ -5,6 +5,7 @@ namespace Webapi.Featrues.Questions;
 
 public interface ILeaderboardXpStore
 {
+    Task<LeaderboardEntry> GetUserEntry(string userId);
     Task<int> UpdateXpAsync(string browserUuid, int xpToAdd, CancellationToken ct = default);
 }
 
@@ -14,6 +15,22 @@ public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator 
     private static readonly ConcurrentDictionary<string, int> pendingXpDeltas = new();
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> flushLocks = new();
 
+    public async Task<LeaderboardEntry> GetUserEntry(string userId)
+    {
+        var leaderboard = await supabase
+            .From<LeaderboardEntry>()
+            .Where(x => x.BrowserUuid == userId)
+            .Get(cancellationToken: CancellationToken.None);
+
+        if (leaderboard.Model is null)
+            return new LeaderboardEntry
+            {
+                BrowserUuid = userId,
+                Xp = 0,
+                UpdatedAt = DateTime.UtcNow
+            };
+        return leaderboard.Model;
+    }
     public async Task<int> UpdateXpAsync(string browserUuid, int xpToAdd, CancellationToken ct = default)
     {
         var estimatedXp = estimatedXpByBrowser.AddOrUpdate(
