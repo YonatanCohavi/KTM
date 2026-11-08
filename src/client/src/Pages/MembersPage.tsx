@@ -1,36 +1,38 @@
-import { useEffect, useMemo, useState } from "react";
-import { RotateCcw, Search, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useMembersQuery } from "@/services/membersService";
-import { loadMemberKnowledge } from "@/services/questionService";
-import { useQuery } from "@tanstack/react-query";
-import { userQueries } from "@/services/user-api";
 import { useUser } from "@/contexts/userContext";
+import { useMembersQuery } from "@/services/membersService";
+import { userQueries } from "@/services/user-api";
+import { useQuery } from "@tanstack/react-query";
+import { RotateCcw, Search, Users } from "lucide-react";
+import { useMemo, useState } from "react";
 
 type sortMethod = 'name' | 'least' | 'most';
 export function MembersPage() {
     const { id: browserUUID } = useUser();
     const { data: members, isError, refetch } = useMembersQuery();
-    const { data: weights} = useQuery(userQueries.weights(browserUUID));
-     const [knowledge, setKnowledge] = useState(loadMemberKnowledge);
-    const knowledge2 = useMemo(() => {
-        const k = Object.entries(weights ?? {}).map(x => ([x[0],Math.round(Math.max(0, Math.min(1, 1 - x[1])) * 100)]));
-        console.log(k,weights);
-        return k;
+    const { data: weights } = useQuery(userQueries.weights(browserUUID));
+    const knowledge = useMemo<Map<number, number>>(() => {
+        if (!weights || Object.keys(weights).length === 0) return new Map<number, number>();
+
+        const entries = Object.entries(weights);
+        const values = entries.map(x => x[1]);
+        const minWeight = Math.min(...values);
+        const maxWeight = Math.max(...values);
+        const range = maxWeight - minWeight || 1;
+
+        return new Map(entries.map(([id, weight]) => {
+            const normalized = (weight - minWeight) / range;
+            const knowledge = Math.round(normalized * 100);
+            return [Number(id), knowledge];
+        }));
+
+
     }, [weights]);
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState<sortMethod>("most");
-    useEffect(() => {
-        const refreshKnowledge = () => setKnowledge(loadMemberKnowledge());
-        window.addEventListener("focus", refreshKnowledge);
-        window.addEventListener("storage", refreshKnowledge);
-        return () => {
-            window.removeEventListener("focus", refreshKnowledge);
-            window.removeEventListener("storage", refreshKnowledge);
-        };
-    }, []);
+  ;
 
     if (isError) {
         return <div className="flex h-full flex-col items-center justify-center gap-4 px-4 text-center" role="alert">
@@ -52,7 +54,7 @@ export function MembersPage() {
         return `${first.firstname} ${first.lastname}`.localeCompare(`${second.firstname} ${second.lastname}`, "he");
     });
     const memberImageUrl = (memberId: number) => {
-            return `${import.meta.env.VITE_API_BASE_URL}/member/${memberId}/image`;
+        return `${import.meta.env.VITE_API_BASE_URL}/member/${memberId}/image`;
     };
     return <section className="h-full overflow-y-auto px-3 py-4 sm:p-6" aria-labelledby="members-heading">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
@@ -88,13 +90,13 @@ export function MembersPage() {
                             <AvatarFallback className="rounded-md">{member.firstname[0]}{member.lastname[0]}</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                            <h2 className="break-words text-base font-semibold">{name}</h2>
-                            <p className="mb-3 break-words text-sm text-muted-foreground">{member.factionName}</p>
+                            <h2 className="wrap-break-word text-base font-semibold">{name}</h2>
+                            <p className="mb-3 wrap-break-word text-sm text-muted-foreground">{member.factionName}</p>
                             <div className="mb-1 flex items-center justify-between gap-2 text-xs">
                                 <span>רמת היכרות</span>
                                 <span className="shrink-0 font-semibold tabular-nums">{score}/100</span>
                             </div>
-                            <Progress value={score} aria-label={`רמת היכרות עם ${name}`} className={score >= 70 ? "bg-emerald-100 [&>[data-slot=progress-indicator]]:bg-emerald-600" : score >= 30 ? "bg-primary/20" : "bg-amber-100 [&>[data-slot=progress-indicator]]:bg-amber-500"} />
+                            <Progress value={score} aria-label={`רמת היכרות עם ${name}`} className={score >= 70 ? "bg-emerald-100 *:data-[slot=progress-indicator]:bg-emerald-600" : score >= 30 ? "bg-primary/20" : "bg-amber-100 *:data-[slot=progress-indicator]:bg-amber-500"} />
                         </div>
                     </li>;
                 })}
