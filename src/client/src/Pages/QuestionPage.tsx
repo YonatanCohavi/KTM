@@ -71,7 +71,6 @@ const QuestionPage = () => {
             setElapsedSeconds(0);
             setQuestionStartTime(null);
             setWrongAnswers([]);
-            preloadNextQuestion();
         } else {
             fetchNextQuestion(undefined, {
                 onSuccess: (data) => {
@@ -79,14 +78,14 @@ const QuestionPage = () => {
                     setElapsedSeconds(0);
                     setQuestionStartTime(null);
                     setWrongAnswers([]);
-                    preloadNextQuestion();
                 },
             });
         }
     };
+
     useEffect(() => {
         if (currentQuestion) {
-            console.log("Current question:", currentQuestion);
+            preloadNextQuestion();
         }
     }, [currentQuestion]);
     // useEffect(() => {

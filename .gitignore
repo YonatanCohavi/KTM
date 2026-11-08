@@ -466,3 +466,6 @@ FodyWeavers.xsd
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
 /src/Webapi/SERVER_SIDE_WEIGHT_CACHE.md
+
+# wwwroot folder - generated/compiled files
+wwwroot/

@@ -46,8 +46,5 @@ export function useAnswer({ browserUUID }: { browserUUID: string }) {
             });
             return AnswerResponse.parse(response.data);
         },
-        onSuccess: (response) => {
-            console.log("Answer response:", response);
-        }
     });
 }
