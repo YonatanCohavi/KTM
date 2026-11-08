@@ -5,18 +5,6 @@ type PlayerStats = {
   lastPlay: Date;
 };
 
-type UpdateOptions = {
-  basePoints: number;
-  responseTimeSec?: number;
-  penalizeStreak?: boolean;
-};
-
-type UpdateRespose = {
-  stats: PlayerStats,
-  leveledUp: boolean
-  xpGained: number
-}
-
 export const knowledgeLevelIcons = [
   "Baby",       // 1 - Newbie
   "BookOpen",   // 2 - Student

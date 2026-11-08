@@ -5,26 +5,23 @@ import { getLevelName } from "@/services/statsService";
 import { userQueries } from "@/services/user-api";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 
-type LeaderboardEntry = {
-  id: string;
-  browserUUID: string;
-  name: string;
-  level: number;
-  xp: number;
-  streak: number;
-}
+
 export function LeaderboardPage() {
   const { id: browserUUID } = useUser();
-  const {data: leaderboardData ,isLoading,isError,error } = useQuery(userQueries.leaderboard())
+  const { data: leaderboardData, isLoading, isError, error } = useQuery(userQueries.leaderboard())
   // const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [playerRank, setPlayerRank] = useState<number | null>(null);
+  // const [playerRank, setPlayerRank] = useState<number | null>(null);
   // const [isLoading, setIsLoading] = useState(true);
   // const [error, setError] = useState<string | null>(null);
 
- 
-useEffect(() => {console.log(leaderboardData)},[leaderboardData]);
+  const playerRank = useMemo(() => {
+    if (!leaderboardData) return null;
+    const index = leaderboardData.findIndex(entry => entry.userId === browserUUID);
+    return index !== -1 ? index + 1 : null;
+  }, [leaderboardData, browserUUID]);
+  useEffect(() => { console.log(leaderboardData) }, [leaderboardData]);
   return (
     <section
       className="h-full overflow-y-auto px-3 py-4 sm:p-6 lg:max-w-2xl lg:mx-auto"
@@ -73,7 +70,7 @@ useEffect(() => {console.log(leaderboardData)},[leaderboardData]);
       )}
 
       {/* Leaderboard Table */}
-      {!isLoading &&  leaderboardData && leaderboardData.length > 0 && (
+      {!isLoading && leaderboardData && leaderboardData.length > 0 && (
         <div className="border rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
