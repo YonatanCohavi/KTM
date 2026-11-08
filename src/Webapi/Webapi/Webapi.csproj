@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>31982ca6-e91f-40e8-a61a-a5c239490b93</UserSecretsId>
+    <SpaRoot>..\..\client\</SpaRoot>
+    <SpaDistDir>$(SpaRoot)dist\</SpaDistDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +19,21 @@
   <ItemGroup>
     <Folder Include="Featrues\Knesset\Endpoints\" />
   </ItemGroup>
+
+  <Target Name="BuildAndCopySpa" BeforeTargets="PrepareForPublish">
+    <Message Importance="high" Text="Building SPA from $(SpaRoot)" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+
+    <MakeDir Directories="$(ProjectDir)wwwroot" />
+
+    <ItemGroup>
+      <SpaDistFiles Include="$(SpaDistDir)**\*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(SpaDistFiles)"
+      DestinationFiles="@(SpaDistFiles->'$(ProjectDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>
