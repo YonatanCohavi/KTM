@@ -38,14 +38,9 @@ const QuestionPage = () => {
         return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image?optionIndex=${optionIndex}`;
     };
 
-    const preloadImages = (question: QuestionResponse) => {
+    const preloadMainImage = (question: QuestionResponse) => {
         const mainImg = new Image();
         mainImg.src = questionImageUrl(question.id);
-
-        question.options.forEach((_, idx) => {
-            const optionImg = new Image();
-            optionImg.src = questionImageUrl(question.id, idx);
-        });
     };
 
     const preloadNextQuestion = async () => {
@@ -53,7 +48,7 @@ const QuestionPage = () => {
         setIsPreloading(true);
         try {
             const data = await fetchNextQuestion();
-            preloadImages(data.question);
+            preloadMainImage(data.question);
             setPreloadedQuestion(data.question);
         } catch (error) {
             console.error("Failed to preload question:", error);
@@ -302,7 +297,9 @@ const QuestionPage = () => {
                         </Button>
                         <div className={cn("w-0 overflow-hidden transition-all flex items-center justify-center", { "w-11 sm:w-16 lg:w-20": wrongAnswers.includes(option.id) })}>
                             <Avatar className="size-11 sm:size-16 lg:size-20 shrink-0">
-                                <AvatarImage src={questionImageUrl(currentQuestion.id, idx)} alt="User Avatar" className="object-cover" />
+                                {wrongAnswers.includes(option.id) && (
+                                    <AvatarImage src={questionImageUrl(currentQuestion.id, idx)} alt="User Avatar" className="object-cover" />
+                                )}
                                 <AvatarFallback></AvatarFallback>
                             </Avatar>
                         </div>
