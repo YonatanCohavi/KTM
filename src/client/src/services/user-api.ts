@@ -1,0 +1,31 @@
+import { queryOptions } from "@tanstack/react-query"
+import api from "./api"
+import z from 'zod';
+
+
+export const UserStats = z.object({
+    name: z.string(),
+    level: z.object({
+        level: z.number(),
+        currentLevelXp: z.number(),
+        nextLevelXp: z.number()
+    }),
+    currentLevelXp: z.number(),
+    streak: z.number()
+});
+export type UserStats = z.infer<typeof UserStats>;
+
+export const userKeys = {
+    all: ["user"] as const,
+    stats: (id: string) => [...userKeys.all, "stats", id] as const,
+}
+
+export const userQueries = {
+    stats: (id: string) => queryOptions({
+        queryKey: userKeys.stats(id),
+        queryFn: async () => {
+            const response = await api.get(`/user/${id}/stats`)
+            return UserStats.parse(response.data)
+        }
+    })
+}

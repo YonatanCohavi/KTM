@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "./api";
 import z from "zod";
+import { UserStats } from "./user-api";
 
 
 const QuestionResponse = z.object({
@@ -30,20 +31,10 @@ export function useNextQuestion({ browserUUID }: { browserUUID: string }) {
     });
 }
 
-const userStats = z.object({
-    name: z.string(),
-    level: z.object({
-        level: z.number(),
-        currentLevelXp: z.number(),
-        nextLevelXp: z.number()
-    }),
-    currentLevelXp: z.number(),
-    streak: z.number()
-});
-export type UserStats = z.infer<typeof userStats>;
 const AnswerResponse = z.object({
     isCorrect: z.boolean(),
-    userStats: userStats
+    xpGained: z.number(),
+    userStats: UserStats
 });
 export type AnswerResponse = z.infer<typeof AnswerResponse>;
 export function useAnswer({ browserUUID }: { browserUUID: string }) {

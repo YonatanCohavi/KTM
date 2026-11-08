@@ -7,7 +7,9 @@ import { useUser } from "@/contexts/userContext";
 import { cn } from "@/lib/utils";
 import { useAnswer, useNextQuestion, type QuestionResponse, type UserStats } from "@/services/question-api";
 import { loadStats } from "@/services/statsService";
+import { userQueries } from "@/services/user-api";
 import type { FireworksHandlers } from '@fireworks-js/react';
+import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -55,10 +57,15 @@ const QuestionPage = () => {
     // }, []);
 
     const fireworksRef = useRef<FireworksHandlers>(null)
+    const { data: fetchedUserStats } = useQuery({ ...userQueries.stats(browserUUID), staleTime: Infinity })
     const [showFireworks, setShowFireworks] = useState(false);
     const [wrongAnswers, setWrongAnswers] = useState<number[]>([]);
     const [numbers, setNumbers] = useState<FloatingNumber[]>([]);
-
+    useEffect(() => {
+        if (fetchedUserStats) {
+            setPlayerStatus(fetchedUserStats);
+        }
+    }, [fetchedUserStats]);
     // const [question, setQuestion] = useState<Question | undefined>(undefined);
     // const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
     const [playrsStatus, setPlayerStatus] = useState<UserStats>();
@@ -134,15 +141,16 @@ const QuestionPage = () => {
     async function answer(e: React.MouseEvent, optionId: number) {
         if (!currentQuestion)
             return;
-        const { isCorrect, userStats } = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
+        const { isCorrect, userStats, xpGained } = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
         console.log({ isCorrect, userStats });
         setPlayerStatus(userStats);
-        if (!isCorrect) {
-            setWrongAnswers([...wrongAnswers, optionId]);
-        }
+        showScore(e, xpGained);
         if (wrongAnswers.length >= 3 || isCorrect) {
             getNextQuestion();
             return;
+        }
+        if (!isCorrect) {
+            setWrongAnswers([...wrongAnswers, optionId]);
         }
     }
     // function answer(e: React.MouseEvent, optionId: number) {
@@ -204,11 +212,10 @@ const QuestionPage = () => {
             <p className="text-2xl font-semibold">מחכה לחברים..</p>
         </div>;
 
-    function imageURL(memberId: number) {
-        return `${import.meta.env.VITE_API_BASE_URL}/member/${memberId}/image`;
-    }
-    function questionImageUrl(questionId: string) {
-        return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
+    function questionImageUrl(questionId: string, optionIndex?: number) {
+        if (optionIndex === undefined)
+            return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
+        return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image?optionIndex=${optionIndex}`;
     }
     return (
         <div className="mx-auto flex h-full min-h-0 flex-col gap-2 px-3 py-2 sm:gap-4 sm:p-4 lg:max-w-3xl lg:px-8 xl:gap-6 xl:py-6">
@@ -244,7 +251,7 @@ const QuestionPage = () => {
             </div>
             {/* <div className="grow"/> */}
             <div className="grid shrink-0 gap-1 sm:gap-2 lg:grid-cols-2 lg:gap-3">
-                {currentQuestion?.options.map((option) => (
+                {currentQuestion?.options.map((option, idx) => (
                     <div key={option.id} className={cn("flex min-w-0", { "gap-4": wrongAnswers.includes(option.id) })}>
                         <Button
                             className={cn("flex h-11 min-w-0 grow opacity-100 transition-all sm:h-16 lg:justify-center lg:text-lg xl:h-20", { shake: wrongAnswers.includes(option.id) })}
@@ -255,9 +262,9 @@ const QuestionPage = () => {
                             </span>
                             <div className="grow lg:hidden"></div>
                         </Button>
-                        <div className={cn("w-0 overflow-hidden transition-all", { "w-10": wrongAnswers.includes(option.id) })}>
-                            <Avatar className="my-auto size-8 sm:size-10">
-                                <AvatarImage src={imageURL(option.id)} alt="User Avatar" className="object-cover" />
+                        <div className={cn("w-0 overflow-hidden transition-all flex items-center justify-center", { "w-11 sm:w-16 lg:w-20": wrongAnswers.includes(option.id) })}>
+                            <Avatar className="size-11 sm:size-16 lg:size-20 shrink-0">
+                                <AvatarImage src={questionImageUrl(currentQuestion.id, idx)} alt="User Avatar" className="object-cover" />
                                 <AvatarFallback></AvatarFallback>
                             </Avatar>
                         </div>

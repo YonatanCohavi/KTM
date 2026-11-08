@@ -82,7 +82,8 @@ public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandl
                 CorrectMemberId = correctMember.MkId,
                 UserId = command.UserId,
                 CreatedAt = DateTime.UtcNow,
-                WrongAnswerCount = 0
+                WrongAnswerCount = 0,
+                Options = [.. question.Options.Select(o => o.Id)]
             })
             .SetSlidingExpiration(TimeSpan.FromMinutes(5));
         return question;

@@ -9,4 +9,5 @@ public class CachedQuestion
     public required string UserId { get; set; }
     public required DateTime CreatedAt { get; set; }
     public int WrongAnswerCount { get; set; }
+    public required int[] Options { get; set; } = [];
 }
