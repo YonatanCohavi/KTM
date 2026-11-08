@@ -20,7 +20,7 @@ interface FloatingNumber {
 }
 
 const QuestionPage = () => {
-    const { id: browserUUID, name: playerName } = useUser();
+    const { id: browserUUID } = useUser();
     const { mutateAsync: fetchNextQuestion } = useNextQuestion({ browserUUID });
     const { mutateAsync: answerQuestionAsync } = useAnswer({ browserUUID });
     const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse>();
@@ -256,9 +256,6 @@ const QuestionPage = () => {
     //         <p>לא הצלחנו לטעון את נתוני החברים.</p>
     //         <Button onClick={() => { void refetchMembers(); }}>נסו שוב</Button>
     //     </div>;
-function memberImage(memberid: number) {
-    return `/path/to/member/images/${memberid}.png`;
-}
     if (!currentQuestion)
         return <div className="flex h-full flex-col justify-center items-center gap-1.5 waiting-chairs">
             <div className="text-5xl ">🪑 🪑 🪑</div>
@@ -299,7 +296,7 @@ function memberImage(memberid: number) {
             </div>
             {/* <div className="grow"/> */}
             <div className="grid shrink-0 gap-1 sm:gap-2 lg:grid-cols-2 lg:gap-3">
-                {currentQuestion?.options.map((option, idx) => (
+                {currentQuestion?.options.map((option) => (
                     <div key={option.id} className={cn("flex min-w-0", { "gap-4": wrongAnswers.includes(option.id) })}>
                         <Button
                             className={cn("flex h-11 min-w-0 grow opacity-100 transition-all sm:h-16 lg:justify-center lg:text-lg xl:h-20", { shake: wrongAnswers.includes(option.id) })}

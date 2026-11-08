@@ -1,7 +1,7 @@
 import { LevelIcon } from "@/components/LevelIcon";
 import { Progress } from "@/components/ui/progress";
-import type { UserStats } from "@/services/question-api";
 import { getLevelName } from "@/services/statsService";
+import type { UserStats } from "@/services/user-api";
 import { Flame, Trophy } from "lucide-react";
 import { memo, useMemo } from "react";
 

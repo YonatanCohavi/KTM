@@ -15,6 +15,7 @@ builder.Services.AddHttpClient<IKnessetAPI, KnessetAPI>(client =>
     client.BaseAddress = new Uri("https://knesset.gov.il/WebSiteApi/knessetapi/");
 });
 
+builder.Services.addspa
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IBrowserWeightCache, SupabaseBrowserWeightCache>();
 builder.Services.AddSingleton<IXPCalculator, XPCalculator>();
