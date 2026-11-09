@@ -26,6 +26,7 @@ const QuestionPage = () => {
     const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse>();
     const [preloadedQuestion, setPreloadedQuestion] = useState<QuestionResponse>();
     const [isPreloading, setIsPreloading] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     useEffect(() => {
         getNextQuestion();
@@ -65,22 +66,26 @@ const QuestionPage = () => {
     };
 
     const getNextQuestion = () => {
-        if (preloadedQuestion) {
-            setCurrentQuestion(preloadedQuestion);
-            setPreloadedQuestion(undefined);
-            setElapsedSeconds(0);
-            setQuestionStartTime(null);
-            setWrongAnswers([]);
-        } else {
-            fetchNextQuestion({ prevQuestionId: currentQuestion?.id }, {
-                onSuccess: (data) => {
-                    setCurrentQuestion(data.question);
-                    setElapsedSeconds(0);
-                    setQuestionStartTime(null);
-                    setWrongAnswers([]);
-                },
-            });
-        }
+        setIsAnimating(true);
+        setTimeout(() => {
+            if (preloadedQuestion) {
+                setCurrentQuestion(preloadedQuestion);
+                setPreloadedQuestion(undefined);
+                setElapsedSeconds(0);
+                setQuestionStartTime(null);
+                setWrongAnswers([]);
+            } else {
+                fetchNextQuestion({ prevQuestionId: currentQuestion?.id }, {
+                    onSuccess: (data) => {
+                        setCurrentQuestion(data.question);
+                        setElapsedSeconds(0);
+                        setQuestionStartTime(null);
+                        setWrongAnswers([]);
+                    },
+                });
+            }
+            setIsAnimating(false);
+        }, 300);
     };
 
     useEffect(() => {
@@ -173,7 +178,7 @@ const QuestionPage = () => {
             <div className="@container-[size] flex min-h-0 flex-1 items-center justify-center">
                 <Avatar
                     key={`${currentQuestion.id}-${imageAttempt}`}
-                    className="aspect-square h-auto w-[min(100cqh,100cqw)] max-w-64 shrink-0 lg:max-w-80"
+                    className={cn("aspect-square h-auto w-[min(100cqh,100cqw)] max-w-64 shrink-0 lg:max-w-80", isAnimating ? "image-fade-out" : "image-fade-in")}
                 >
                     <AvatarImage src={questionImageUrl(currentQuestion.id)} className="object-cover " alt="User Avatar"
                         onLoad={() => setQuestionStartTime(startTime => startTime ?? new Date())}
