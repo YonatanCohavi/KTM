@@ -7,6 +7,7 @@ import { useUser } from "@/contexts/userContext";
 import { cn } from "@/lib/utils";
 import { useAnswer, useNextQuestion, type QuestionResponse } from "@/services/question-api";
 import { userQueries, UserStats } from "@/services/user-api";
+import { soundService } from "@/services/soundService";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle, RotateCcw } from "lucide-react";
@@ -143,12 +144,28 @@ const QuestionPage = () => {
             return;
         const { isCorrect, userStats, xpGained } = await answerQuestionAsync({ qid: currentQuestion.id, memberId: optionId });
         console.log({ isCorrect, userStats });
+        
+        // Play sounds
+        if (isCorrect) {
+            soundService.correct();
+        } else {
+            soundService.wrong();
+        }
+        
+        // Check for level up
         if (playerStatus?.level.level && userStats.level.level > playerStatus.level.level) {
             setShowFireworks(true);
+            soundService.levelup();
             setTimeout(() => {
                 setShowFireworks(false);
             }, 5000);
         }
+        
+        // Check for streak milestone (every 5 streak)
+        if (userStats.streak > 0 && userStats.streak % 5 === 0 && userStats.streak !== playerStatus?.streak) {
+            soundService.streak();
+        }
+        
         setPlayerStatus(userStats);
         showScore(e, xpGained);
         if (wrongAnswers.length >= 3 || isCorrect) {
