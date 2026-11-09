@@ -7,13 +7,15 @@ public interface ILeaderboardXpStore
 {
     Task<List<LeaderboardEntry>> GetAll();
     Task<LeaderboardEntry> GetUserEntry(string userId);
-    Task<int> UpdateXpAsync(string browserUuid, int xpToAdd, CancellationToken ct = default);
+    Task<LeaderboardEntry> UpdateUserEntity(LeaderboardEntry user);
+    Task<int> UpdateXpAsync(string browserUuid, int xpToAdd, int streak, CancellationToken ct = default);
 }
 
 public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator xpCalculator) : ILeaderboardXpStore
 {
     private static readonly ConcurrentDictionary<string, int> estimatedXpByBrowser = new();
     private static readonly ConcurrentDictionary<string, int> pendingXpDeltas = new();
+    private static readonly ConcurrentDictionary<string, int> pendingStreakByBrowser = new();
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> flushLocks = new();
 
     public async Task<List<LeaderboardEntry>> GetAll()
@@ -39,7 +41,7 @@ public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator 
             };
         return leaderboard.Model;
     }
-    public async Task<int> UpdateXpAsync(string browserUuid, int xpToAdd, CancellationToken ct = default)
+    public async Task<int> UpdateXpAsync(string browserUuid, int xpToAdd, int streak, CancellationToken ct = default)
     {
         var estimatedXp = estimatedXpByBrowser.AddOrUpdate(
             browserUuid,
@@ -47,6 +49,7 @@ public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator 
             (_, currentXp) => ApplyDelta(currentXp, xpToAdd));
 
         pendingXpDeltas.AddOrUpdate(browserUuid, xpToAdd, (_, currentDelta) => currentDelta + xpToAdd);
+        pendingStreakByBrowser.AddOrUpdate(browserUuid, streak, (_, _) => streak);
         QueueFlush(browserUuid);
 
         await Task.CompletedTask;
@@ -82,19 +85,27 @@ public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator 
     {
         while (pendingXpDeltas.TryRemove(browserUuid, out var xpDelta))
         {
+            var streak = pendingStreakByBrowser.TryGetValue(browserUuid, out var pendingStreak)
+                ? pendingStreak
+                : (int?)null;
+
             try
             {
-                await PersistDeltaAsync(browserUuid, xpDelta);
+                await PersistDeltaAsync(browserUuid, xpDelta, streak);
             }
             catch
             {
                 pendingXpDeltas.AddOrUpdate(browserUuid, xpDelta, (_, existing) => existing + xpDelta);
+                if (streak.HasValue)
+                {
+                    pendingStreakByBrowser.AddOrUpdate(browserUuid, streak.Value, (_, existing) => Math.Max(existing, streak.Value));
+                }
                 break;
             }
         }
     }
 
-    private async Task PersistDeltaAsync(string browserUuid, int xpDelta)
+    private async Task PersistDeltaAsync(string browserUuid, int xpDelta, int? streak)
     {
         var leaderboard = await supabase
             .From<LeaderboardEntry>()
@@ -115,6 +126,8 @@ public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator 
                 {
                     BrowserUuid = browserUuid,
                     Xp = xpDelta,
+                    Streak = streak ?? 0,
+                    MaxStreak = streak ?? 0,
                     UpdatedAt = DateTime.UtcNow
                 }, cancellationToken: CancellationToken.None);
 
@@ -124,9 +137,24 @@ public class SupabaseLeaderboardXpStore(Supabase.Client supabase, IXPCalculator 
 
         var persistedXp = ApplyDelta(leaderboard.Model.Xp, xpDelta);
         leaderboard.Model.Xp = persistedXp;
+        if (streak.HasValue)
+        {
+            leaderboard.Model.Streak = streak.Value;
+            leaderboard.Model.MaxStreak = Math.Max(leaderboard.Model.MaxStreak, streak.Value);
+        }
         leaderboard.Model.UpdatedAt = DateTime.UtcNow;
 
         await leaderboard.Model.Update<LeaderboardEntry>(cancellationToken: CancellationToken.None);
         estimatedXpByBrowser.AddOrUpdate(browserUuid, persistedXp, (_, _) => persistedXp);
+    }
+
+    public async Task<LeaderboardEntry> UpdateUserEntity(LeaderboardEntry user)
+    {
+        await supabase
+            .From<LeaderboardEntry>()
+            .Where(t => t.BrowserUuid == user.BrowserUuid)
+            .Set(t => t.PlayerName, user.PlayerName)
+            .Update();
+        return user;
     }
 }

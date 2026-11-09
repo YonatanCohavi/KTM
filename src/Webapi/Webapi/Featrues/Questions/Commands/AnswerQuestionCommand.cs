@@ -31,7 +31,7 @@ public class AnswerQuestionCommandHandler(
             var streak = memberSessionManager.RegisterAnswer(question.UserId, false);
             memoryCache.Remove(cacheKey);
             var penaltyXp = memberSessionManager.GetWrongPenelty();
-            var xpAfterPenalty = await leaderboardXpStore.UpdateXpAsync(question.UserId, penaltyXp, ct);
+            var xpAfterPenalty = await leaderboardXpStore.UpdateXpAsync(question.UserId, penaltyXp, streak, ct);
             var currentLevel = xPCalculator.GetLevelByXp(xpAfterPenalty);
 
             return new AnswerQuestionCommandResponse
@@ -69,13 +69,13 @@ public class AnswerQuestionCommandHandler(
             var answerTime = DateTime.UtcNow - question.CreatedAt;
             var reward = memberSessionManager.CalculateQuestionReward(currentStreak, answerTime, question.WrongAnswerCount);
             xpGained = Math.Max(0, (int)Math.Round(reward));
-            userXp = await leaderboardXpStore.UpdateXpAsync(question.UserId, xpGained, ct);
+            userXp = await leaderboardXpStore.UpdateXpAsync(question.UserId, xpGained, currentStreak, ct);
         }
         else
         {
             var penaltyXp = memberSessionManager.GetWrongPenelty();
             xpGained = penaltyXp;
-            userXp = await leaderboardXpStore.UpdateXpAsync(question.UserId, penaltyXp, ct);
+            userXp = await leaderboardXpStore.UpdateXpAsync(question.UserId, penaltyXp, currentStreak, ct);
 
             question.WrongAnswerCount++;
             memoryCache.Set(
@@ -92,7 +92,7 @@ public class AnswerQuestionCommandHandler(
         {
             IsCorrect = isCorrect,
             XpGained = xpGained,
-            
+
             UserStats = new UserStats
             {
                 CurrentLevelXp = userXp - level.CurrentLevelXp,

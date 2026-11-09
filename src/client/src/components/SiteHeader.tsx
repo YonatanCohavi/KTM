@@ -43,7 +43,6 @@ export function SiteHeader({ onMenuClick, navigationDrawerRef }: HeaderProps) {
         </div>
 
         {/* Right: Spacer for balance */}
-        <div className="shrink-0 size-10" />
           <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center shrink-0">
             <img src={logo} alt="Logo" className="h-8 sm:h-10" />
           </div>

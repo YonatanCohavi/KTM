@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions, useMutation } from "@tanstack/react-query"
 import api from "./api"
 import z from 'zod';
 
@@ -54,6 +54,16 @@ export const userQueries = {
     })
 }
 
+type UserMutationVariables = {
+    name: string;
+};
+export const useUserMutation = (id:string) => {
+    return useMutation({
+        mutationFn: async (payload:UserMutationVariables) => {
+            await api.patch(`/user/${id}`, { name: payload.name });
+        }
+    })
+}
 export function setUserName(id: string, name: string){
     return api.patch(`/user/${id}`, { name });
 }

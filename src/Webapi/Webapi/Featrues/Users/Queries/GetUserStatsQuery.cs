@@ -16,7 +16,7 @@ public class GetUserStatsQueryHandler(ILeaderboardXpStore leaderboardXpStore,IXP
         {
             CurrentLevelXp = user.Xp,
             Level = level,
-            Name = "",
+            Name = user.PlayerName,
             Streak = user.Streak
         };
     }

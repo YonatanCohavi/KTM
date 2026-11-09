@@ -1,14 +1,14 @@
-import { createContext, useContext, useState } from "react"
+import { userQueries, useUserMutation } from "@/services/user-api"
+import { useQuery } from "@tanstack/react-query"
+import { createContext, useContext, useMemo } from "react"
 
 type UserContextProps = {
     id: string
     name: string
-    setName: (name: string) => void
+    setName: (name: string) => Promise<void>
 }
 
 const UserContext = createContext<UserContextProps | undefined>(undefined);
-
-const USER_NAME_KEY = "userName";
 
 function getPersistentBrowserUUID() {
     let uuid = localStorage.getItem("browserUUID");
@@ -19,33 +19,18 @@ function getPersistentBrowserUUID() {
     return uuid;
 }
 
-function getPersistentUserName(): string {
-    const name = localStorage.getItem(USER_NAME_KEY);
-    return name || "";
-}
-
-function savePersistentUserName(name: string): void {
-    localStorage.setItem(USER_NAME_KEY, name);
-}
 
 export const UserContextProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const [name, setNameState] = useState<string>(getPersistentUserName());
-    
-    const setName = (newName: string) => {
-        setNameState(newName);
-        savePersistentUserName(newName);
-    };
-
-    const [user] = useState<UserContextProps>({
-        id: getPersistentBrowserUUID(),
-        name,
-        setName
-    });
-
-    // Update name in context when state changes
-    user.name = name;
-
-    return <UserContext.Provider value={user}>
+    const { data: userData } = useQuery(userQueries.stats(getPersistentBrowserUUID()));
+    const { mutateAsync: updateUserAsync } = useUserMutation(getPersistentBrowserUUID());
+    const setName = async (name: string) => await updateUserAsync({ name });
+    var userDetails = useMemo(() => {
+        return {
+            id: getPersistentBrowserUUID(),
+            name: userData?.name || "",
+        }
+    }, [userData]);
+    return <UserContext.Provider value={{ ...userDetails, setName }}>
         {children}
     </UserContext.Provider>
 }
