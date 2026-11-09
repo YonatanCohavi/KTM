@@ -28,7 +28,6 @@ const QuestionPage = () => {
     const [preloadedQuestion, setPreloadedQuestion] = useState<QuestionResponse>();
     const [isPreloading, setIsPreloading] = useState(false);
     const [hasStarted, setHasStarted] = useState(false);
-    const [isPaused, setIsPaused] = useState(false);
     const [countdown, setCountdown] = useState<number | null>(null);
 
     useEffect(() => {
@@ -211,20 +210,7 @@ const QuestionPage = () => {
     if (countdown !== null) {
         return <div className="flex h-full flex-col justify-center items-center gap-4">
             <p className="text-2xl text-muted-foreground">מתחילים בעוד</p>
-            <div className="text-8xl font-bold text-primary">{countdown}</div>
-        </div>;
-    }
-
-    if (isPaused) {
-        return <div className="flex h-full flex-col justify-center items-center gap-6">
-            <div className="text-center">
-                <div className="text-6xl mb-4">⏸️</div>
-                <h2 className="text-2xl font-semibold mb-4">המשחק מושהה</h2>
-                <p className="text-muted-foreground mb-8">קח הפסקה וחזור כשאתה מוכן</p>
-            </div>
-            <Button onClick={() => setIsPaused(false)} className="h-auto min-h-12 px-8 py-3 text-lg">
-                המשך משחק
-            </Button>
+            <div key={countdown} className="text-8xl font-bold text-primary countdown-number">{countdown}</div>
         </div>;
     }
    
@@ -268,9 +254,12 @@ const QuestionPage = () => {
             </div>
             <div className="flex justify-center">
                 <Button
-                variant='ghost'
-                    onClick={() => setIsPaused(true)}
-                    title="השהה המשחק"
+                    variant='ghost'
+                    onClick={() => {
+                        setHasStarted(false);
+                        setCountdown(null);
+                    }}
+                    title="עצור המשחק"
                     className="h-11 sm:h-14 lg:text-lg  aspect-square"
                 >
                     <Pause  className="size-6" />
