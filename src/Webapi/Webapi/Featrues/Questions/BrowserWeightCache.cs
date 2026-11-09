@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using Webapi.Featrues.DB.Supabase;
 
@@ -15,25 +16,39 @@ public class SupabaseBrowserWeightCache(IMemoryCache cache, Supabase.Client supa
 {
     private const string CacheKeyPrefix = "browser_weights_";
     private const int CacheDurationHours = 24;
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> BrowserLocks = new();
 
     public async Task<MemberWeight[]> GetWeightsAsync(string browserId, CancellationToken ct = default)
     {
-        var weights = await supabase
-            .From<BrowserWeight>()
-            .Where(bw => bw.BrowserUuid == browserId)
-            .Get();
+        var browserLock = BrowserLocks.GetOrAdd(browserId, _ => new SemaphoreSlim(1, 1));
 
-        if (weights.Model is null)
+        await browserLock.WaitAsync(ct);
+        try
         {
-            await supabase
+            var weights = await supabase
                 .From<BrowserWeight>()
-                .Insert(new BrowserWeight
-                {
-                    BrowserUuid = browserId,
-                    MemberWeights = []
-                }, cancellationToken: ct);
+                .Where(bw => bw.BrowserUuid == browserId)
+                .Get();
+
+            if (weights.Model is null)
+            {
+                await supabase
+                    .From<BrowserWeight>()
+                    .Insert(new BrowserWeight
+                    {
+                        BrowserUuid = browserId,
+                        MemberWeights = []
+                    }, cancellationToken: ct);
+
+                return [];
+            }
+
+            return weights.Model.MemberWeights ?? [];
         }
-        return weights.Model?.MemberWeights ?? [];
+        finally
+        {
+            browserLock.Release();
+        }
     }
 
     public async Task AdjustWeightAsync(string browserUuid, int memberId, bool increase)
