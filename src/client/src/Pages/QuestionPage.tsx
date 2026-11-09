@@ -88,17 +88,6 @@ const QuestionPage = () => {
             preloadNextQuestion();
         }
     }, [currentQuestion]);
-    // useEffect(() => {
-    //     const handleFocus = () => {
-    //         setPlayerStatus(loadStats());
-    //     };
-
-    //     window.addEventListener('focus', handleFocus);
-
-    //     return () => {
-    //         window.removeEventListener('focus', handleFocus);
-    //     };
-    // }, []);
 
     const fireworksRef = useRef<FireworksHandlers>(null)
     const { data: fetchedUserStats } = useQuery({ ...userQueries.stats(browserUUID), staleTime: Infinity })
@@ -110,8 +99,7 @@ const QuestionPage = () => {
             setPlayerStatus(fetchedUserStats);
         }
     }, [fetchedUserStats]);
-    // const [question, setQuestion] = useState<Question | undefined>(undefined);
-    // const { data: members, isError: membersError, refetch: refetchMembers } = useMembersQuery();
+
     const [playerStatus, setPlayerStatus] = useState<UserStats>();
     const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null);
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -149,38 +137,6 @@ const QuestionPage = () => {
         setNumbers((prev) => prev.filter((num) => num.id !== id));
     };
 
-    // useEffect(() => {
-    //     newQuestion();
-    // }, [members]);
-
-
-
-    // function newQuestion() {
-    //     if (!members)
-    //         return;
-    //     const exclude: number[] = [];
-    //     if (question) {
-    //         exclude.push(question?.answer.id);
-    //         exclude.push(...question.options.map(o => o.id));
-    //     }
-    //     const q = GetQuestion(members, exclude);
-    //     setQuestion(q);
-    //     setWrongAnswers([]);
-    //     setQuestionStartTime(null);
-    //     setElapsedSeconds(0);
-    //     setImageError(false);
-    //     setImageAttempt(0);
-    // }
-
-
-    // useEffect(() => {
-    //     if (!question)
-    //         return;
-    //     question.options.forEach(option => {
-    //         const img = new Image();
-    //         img.src = option.imageUrl;
-    //     });
-    // }, [question]);
 
     async function answer(e: React.MouseEvent, optionId: number) {
         if (!currentQuestion)
@@ -203,58 +159,7 @@ const QuestionPage = () => {
             setWrongAnswers([...wrongAnswers, optionId]);
         }
     }
-    // function answer(e: React.MouseEvent, optionId: number) {
-    //     if (!currentQuestion || !questionStartTime)
-    //         return;
-
-    //     let correct = true;
-    //     let points = 10;
-    //     if (optionId != currentQuestion.answer.id) {
-    //         setWrongAnswers([...wrongAnswers, optionId]);
-    //         correct = false;
-    //     }
-    //     // user clicked on the last option
-    //     if (wrongAnswers.length >= 3) {
-    //         newQuestion();
-    //         return;
-    //     }
-
-    //     // did not know both members
-    //     setAnswer(optionId, correct);
-    //     if (!correct)
-    //         setAnswer(question.answer.id, false);
-
-    //     if (correct) {
-    //         points -= (wrongAnswers.length) * 3;
-    //     } else {
-    //         points *= -1;
-    //     }
-    //     const responseTimeSec = (new Date().getTime() - questionStartTime.getTime()) / 1000;
-    //     const { stats: newStatus, xpGained } = updateStats(playrsStatus, correct ? { basePoints: points, responseTimeSec } : { basePoints: points, penalizeStreak: true });
-    //     if (newStatus.level > playrsStatus.level) {
-    //         setShowFireworks(true);
-    //         setTimeout(() => {
-    //             setShowFireworks(false);
-    //         }, 5000);
-    //     }
-    //     if (xpGained > 0) {
-    //         showScore(e, xpGained);
-    //     } else {
-    //         showScore(e, xpGained);
-    //     }
-    //     setPlayerStatus(newStatus);
-
-    //     // Sync to leaderboard (async, doesn't block UI)
-    //     void syncPlayerToLeaderboard(browserUUID, playerName, newStatus.level, newStatus.xp, newStatus.streak);
-    //     if (wrongAnswers.length >= 3 || correct)
-    //         newQuestion();
-    // }
-
-    // if (membersError)
-    //     return <div className="flex h-full flex-col justify-center items-center gap-4 text-xl font-semibold">
-    //         <p>לא הצלחנו לטעון את נתוני החברים.</p>
-    //         <Button onClick={() => { void refetchMembers(); }}>נסו שוב</Button>
-    //     </div>;
+   
     if (!currentQuestion)
         return <div className="flex h-full flex-col justify-center items-center gap-1.5 waiting-chairs">
             <div className="text-5xl ">🪑 🪑 🪑</div>
@@ -293,7 +198,6 @@ const QuestionPage = () => {
                     </AvatarFallback>
                 </Avatar>
             </div>
-            {/* <div className="grow"/> */}
             <div className="grid shrink-0 gap-1 sm:gap-2 lg:grid-cols-2 lg:gap-3">
                 {currentQuestion?.options.map((option) => (
                     <div key={option.id} className={cn("flex min-w-0", { "gap-4": wrongAnswers.includes(option.id) })}>
