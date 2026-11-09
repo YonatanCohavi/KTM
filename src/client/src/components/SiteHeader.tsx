@@ -1,6 +1,7 @@
-import { Menu, X } from "lucide-react";
+import { Menu, X, Volume2, VolumeX } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useUser } from "@/contexts/userContext";
+import { useSound } from "@/contexts/soundContext";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 export function SiteHeader({ onMenuClick, navigationDrawerRef }: HeaderProps) {
   const { name } = useUser();
+  const { isMuted, toggleMute } = useSound();
 
   return (
     <>
@@ -42,10 +44,21 @@ export function SiteHeader({ onMenuClick, navigationDrawerRef }: HeaderProps) {
           </div>
         </div>
 
-        {/* Right: Spacer for balance */}
-          <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center shrink-0">
+        {/* Right: Sound Toggle & Logo */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            aria-label={isMuted ? "הפעל קול" : "השתק קול"}
+            title={isMuted ? "הפעל קול" : "השתק קול"}
+            onClick={toggleMute}
+            className="flex size-10 items-center justify-center rounded-md hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            {isMuted ? <VolumeX className="size-6" /> : <Volume2 className="size-6" />}
+          </button>
+          <div className="bg-white px-1 pt-1.5 pb-0.5 rounded flex items-center justify-center">
             <img src={logo} alt="Logo" className="h-8 sm:h-10" />
           </div>
+        </div>
       </div>
 
       {/* Navigation Drawer */}

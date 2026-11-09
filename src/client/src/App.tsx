@@ -8,6 +8,7 @@ import { SettingsPage } from "./Pages/SettingsPage"
 import { LeaderboardPage } from "./Pages/LeaderboardPage"
 import { SiteHeader } from "./components/SiteHeader"
 import { UserContextProvider } from "./contexts/userContext"
+import { SoundContextProvider } from "./contexts/soundContext"
 import { cn } from "./lib/utils"
 
 const queryClient = new QueryClient({
@@ -35,12 +36,13 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <UserContextProvider key={sessionVersion}>
-        <div className="mx-auto flex h-dvh flex-col overflow-hidden">
-          <SiteHeader
-            onMenuClick={() => navigationDrawer.current?.showModal()}
-            navigationDrawerRef={navigationDrawer}
-          />
+      <SoundContextProvider>
+        <UserContextProvider key={sessionVersion}>
+          <div className="mx-auto flex h-dvh flex-col overflow-hidden">
+            <SiteHeader
+              onMenuClick={() => navigationDrawer.current?.showModal()}
+              navigationDrawerRef={navigationDrawer}
+            />
 
           {/* Navigation Drawer Content */}
           <dialog
@@ -82,7 +84,8 @@ function App() {
             }} /> : <QuestionPage />}
           </div>
         </div>
-      </UserContextProvider>
+        </UserContextProvider>
+      </SoundContextProvider>
     </QueryClientProvider>
   )
 }

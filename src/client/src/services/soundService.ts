@@ -2,8 +2,12 @@
 
 const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as any).webkitAudioContext)() : null;
 
+function isMuted() {
+    return localStorage.getItem("soundMuted") === "true";
+}
+
 function playTone(frequency: number, duration: number, type: 'sine' | 'triangle' = 'sine', volume: number = 0.3) {
-    if (!audioContext) return;
+    if (!audioContext || isMuted()) return;
 
     const osc = audioContext.createOscillator();
     const gain = audioContext.createGain();
