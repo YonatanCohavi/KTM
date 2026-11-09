@@ -1,6 +1,7 @@
 import FireworksComponent from "@/components/FireworksComponent";
 import { PlayerStatsHeader } from "@/components/PlayerStatsHeader";
 import { TimeBonusMeter } from "@/components/TimeBonusMeter";
+import { GameStartScreen } from "@/components/GameStartScreen";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/userContext";
@@ -201,16 +202,7 @@ const QuestionPage = () => {
     }
    
     if (!hasStarted) {
-        return <div className="flex h-full flex-col justify-center items-center gap-6 px-4">
-            <div className="text-center">
-                <div className="text-6xl mb-4">🎮</div>
-                <h1 className="text-3xl font-bold mb-2">הכר את החבר</h1>
-                <p className="text-lg text-muted-foreground mb-8">בחן את ידיעתך בנושא חברי הכנסת</p>
-            </div>
-            <Button onClick={startGame} className="h-auto min-h-12 px-8 py-3 text-lg">
-                התחל משחק
-            </Button>
-        </div>;
+        return <GameStartScreen onStart={startGame} />;
     }
 
     if (countdown !== null) {
