@@ -8,32 +8,40 @@ public class WeightedRandomSelector(Random? random = null)
 {
     private readonly Random _random = random ?? Random.Shared;
 
-    public T SelectOne<T>(IEnumerable<T> items, Func<T, double> weightSelector)
+    public T SelectOne<T>(IEnumerable<T> items, Func<T, double?> weightSelector)
     {
         var itemList = items.ToList();
         if (itemList.Count == 0)
             throw new ArgumentException("Items collection cannot be empty");
 
-        var weights = itemList.Select(weightSelector).ToList();
-        var totalWeight = weights.Sum();
+        var unweightedItems = itemList.Where(item => !weightSelector(item).HasValue).ToList();
+        if (unweightedItems.Count > 0)
+            return unweightedItems[_random.Next(unweightedItems.Count)];
 
+        var weightedItems = itemList
+            .Select(item => new { Item = item, Weight = weightSelector(item) })
+            .Where(x => x.Weight.HasValue)
+            .Select(x => new { x.Item, Weight = x.Weight!.Value })
+            .ToList();
+
+        var totalWeight = weightedItems.Sum(x => x.Weight);
         if (totalWeight <= 0)
             throw new ArgumentException("Total weight must be greater than 0");
 
         var randomValue = _random.NextDouble() * totalWeight;
         var cumulative = 0.0;
 
-        for (int i = 0; i < itemList.Count; i++)
+        foreach (var weightedItem in weightedItems)
         {
-            cumulative += weights[i];
+            cumulative += weightedItem.Weight;
             if (randomValue <= cumulative)
-                return itemList[i];
+                return weightedItem.Item;
         }
 
-        return itemList[^1];
+        return weightedItems[^1].Item;
     }
 
-    public List<T> SelectMultiple<T>(IEnumerable<T> items, int count, Func<T, double> weightSelector)
+    public List<T> SelectMultiple<T>(IEnumerable<T> items, int count, Func<T, double?> weightSelector)
     {
         var itemList = items.ToList();
         if (count > itemList.Count)

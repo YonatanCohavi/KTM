@@ -33,7 +33,7 @@ public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandl
     {
         var weights = await weightCache.GetWeightsAsync(command.UserId, ct);
         var members = await knessetAPI.GetKnessetMembersAsync(ct);
-        var allmembersWeights = members.ToDictionary(m => m.MkId, m => weights.FirstOrDefault(w => w.MemberId == m.MkId)?.Knowlage ?? 1.0);
+        var memberWeights = weights.ToDictionary(w => w.MemberId, w => (double?)w.Knowlage);
 
         var selectedGender = members[_random.Next(members.Length)].GenderId;
         var membersOfGender = members
@@ -45,13 +45,13 @@ public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandl
 
         var correctMember = _selector.SelectOne(
             membersOfGender,
-            m => allmembersWeights[m.MkId]
+            m => memberWeights.TryGetValue(m.MkId, out var weight) ? weight : null
         );
 
         var otherMembers = _selector.SelectMultiple(
             membersOfGender.Where(m => m.MkId != correctMember.MkId),
             3,
-            m => allmembersWeights[m.MkId]
+            m => memberWeights.TryGetValue(m.MkId, out var weight) ? weight : null
         ).ToList();
 
         var shuffledOptions = new[] { correctMember }.Concat(otherMembers).OrderBy(x => _random.Next());
