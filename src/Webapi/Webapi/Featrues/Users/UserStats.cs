@@ -7,7 +7,7 @@ public class LeaderBoardMember
     public required string UserId { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Level { get; set; }
-    public int MaxStreak { get; set; }
+    public required int MaxStreak { get; set; }
     public int Streak { get; set; }
     public int Xp { get; set; }
 }

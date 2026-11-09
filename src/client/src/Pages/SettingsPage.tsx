@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/userContext";
 import { Settings, Trash2, User } from "lucide-react";
 import { useRef, useState } from "react";
-import { GoogleLogin } from "@/components/GoogleLogin";
+// import { GoogleLogin } from "@/components/GoogleLogin";
 
 export function SettingsPage({ }: { onRestart: () => void }) {
-    const { name, setName, resetUser } = useUser();
+    const { name, setName } = useUser();
         const confirmation = useRef<HTMLDialogElement>(null);
         const nameInput = useRef<HTMLInputElement>(null);
         const [error, setError] = useState("");
@@ -18,7 +18,7 @@ export function SettingsPage({ }: { onRestart: () => void }) {
      }
      
      async function restartGame() {
-        await resetUser();
+        // await resetUser();
         confirmation.current?.close();
      }
 
@@ -26,11 +26,11 @@ export function SettingsPage({ }: { onRestart: () => void }) {
             <h1 id="settings-heading" className="mb-6 flex items-center gap-2 text-2xl font-semibold"><Settings className="size-6" />הגדרות</h1>
 
             {/* Google Login */}
-            <div className="flex flex-col items-start gap-4 border-b py-6">
+            {/* <div className="flex flex-col items-start gap-4 border-b py-6">
                 <h2 className="text-lg font-semibold">כניסה עם חשבון Google</h2>
                 <p className="max-w-2xl text-sm text-muted-foreground">התחבר עם Google כדי לשמור את ההתקדמות שלך בחשבון קבוע</p>
                 <GoogleLogin />
-            </div>
+            </div> */}
 
             {/* Player Name Settings */}
             <div className="flex flex-col items-start gap-4 border-b py-6">
@@ -63,7 +63,7 @@ export function SettingsPage({ }: { onRestart: () => void }) {
             <div className="flex flex-col items-start gap-4 border-b py-6">
                 <h2 className="text-lg font-semibold">נתוני המשחק</h2>
                 <p className="max-w-2xl text-sm text-muted-foreground">האיפוס ימחק את הניקוד, הרמה, רצף התשובות ורמות ההיכרות השמורים בדפדפן הזה.</p>
-                <Button variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
+                <Button disabled variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
                     setError("");
                     confirmation.current?.showModal();
                 }}><Trash2 className="shrink-0" />מחיקת הנתונים והתחלה מחדש</Button>
