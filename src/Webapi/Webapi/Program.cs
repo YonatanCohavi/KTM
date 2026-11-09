@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.HttpOverrides;
 using Supabase.Core.Http;
 using Supabase.Extensions.DependencyInjection;
 using Webapi.Featrues.Auth;
@@ -46,14 +47,40 @@ builder.Services
     .AddAuthorization()
     .AddAuthentication(ApiKeyAuthHandler.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthHandler>(ApiKeyAuthHandler.SchemeName, null);
+
+// Add security headers
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+    options.Preload = true;
+});
+
 var app = builder.Build();
+
+// Handle Azure's X-Forwarded-Proto header for HTTPS detection
+if (!app.Environment.IsDevelopment())
+{
+    app.UseForwardedHeaders(new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedProto
+    });
+    app.UseHsts();
+    // Force HTTPS redirect in production
+    app.UseHttpsRedirection();
+}
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseHttpsRedirection();
 }
+else
+{
+    app.MapOpenApi();
+}
+
 app.UseCors();
-app.UseHttpsRedirection();
 app.MapHealthChecks("/health");
 app.UseResponseCaching();
 
