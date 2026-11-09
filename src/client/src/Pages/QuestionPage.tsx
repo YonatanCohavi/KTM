@@ -2,6 +2,7 @@ import FireworksComponent from "@/components/FireworksComponent";
 import { PlayerStatsHeader } from "@/components/PlayerStatsHeader";
 import { TimeBonusMeter } from "@/components/TimeBonusMeter";
 import { GameStartScreen } from "@/components/GameStartScreen";
+import { GameBreakScreen } from "@/components/GameBreakScreen";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/userContext";
@@ -30,6 +31,8 @@ const QuestionPage = () => {
     const [isPreloading, setIsPreloading] = useState(false);
     const [hasStarted, setHasStarted] = useState(false);
     const [countdown, setCountdown] = useState<number | null>(null);
+    const [questionsAnswered, setQuestionsAnswered] = useState(0);
+    const [showBreak, setShowBreak] = useState(true);
 
     useEffect(() => {
         if (!hasStarted) return;
@@ -188,6 +191,15 @@ const QuestionPage = () => {
         setPlayerStatus(userStats);
         showScore(e, xpGained);
         if (wrongAnswers.length >= 3 || isCorrect) {
+            const newCount = questionsAnswered + 1;
+            setQuestionsAnswered(newCount);
+            
+            // Check if it's time for a break (every 20 questions)
+            if (newCount % 20 === 0) {
+                setShowBreak(true);
+                return;
+            }
+            
             getNextQuestion();
             return;
         }
@@ -205,6 +217,22 @@ const QuestionPage = () => {
             <p className="text-2xl text-muted-foreground">מתחילים בעוד</p>
             <div key={countdown} className="text-8xl font-bold text-primary countdown-number">{countdown}</div>
         </div>;
+    }
+
+    if (showBreak) {
+        return <GameBreakScreen 
+            questionsAnswered={questionsAnswered} 
+            onContinue={() => {
+                setShowBreak(false);
+                getNextQuestion();
+            }}
+            onStop={() => {
+                setShowBreak(false);
+                setHasStarted(false);
+                setCountdown(null);
+                setQuestionsAnswered(0);
+            }}
+        />;
     }
    
     if (!currentQuestion)
