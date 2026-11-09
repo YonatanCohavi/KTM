@@ -9,13 +9,13 @@ interface GameBreakScreenProps {
 
 export function GameBreakScreen({ questionsAnswered, onContinue, onStop }: GameBreakScreenProps) {
     const [autoCloseIn, setAutoCloseIn] = useState(5);
-    const progressPercentage = ((5 - autoCloseIn) / 5) * 100;
-console.log(progressPercentage);
-    // Timer countdown
+    const progressPercentage = Math.min(100, ((5 - autoCloseIn) / 5) * 100);
+
+    // Timer countdown - updates every 100ms for smooth animation
     useEffect(() => {
         const timer = setInterval(() => {
-            setAutoCloseIn(prev => prev - 1);
-        }, 1000);
+            setAutoCloseIn(prev => prev - 0.1);
+        }, 100);
 
         return () => clearInterval(timer);
     }, []);
@@ -33,20 +33,14 @@ console.log(progressPercentage);
                 <div className="text-6xl mb-4">☕</div>
                 <h2 className="text-2xl font-bold mb-2">קח הפסקה קטנה!</h2>
                 <p className="text-muted-foreground mb-2">סיימת {questionsAnswered} שאלות</p>
-                <p className="text-sm text-muted-foreground mb-6">המשך בעוד {Math.max(0, autoCloseIn)} שניות...</p>
-                <div className="flex gap-3">
-                    <div className="flex-1 relative">
-                        <div 
-                            className="absolute inset-0 bg-primary/30 rounded-md transition-all duration-100"
-                            style={{width: `${progressPercentage}%`}}
-                        />
-                        <Button 
-                            onClick={onContinue}
-                            className="h-auto min-h-12 px-8 py-3 text-lg font-bold w-full relative"
-                        >
-                            המשך משחק
-                        </Button>
-                    </div>
+                <p className="text-sm text-muted-foreground mb-6">המשך בעוד {Math.max(0, Math.ceil(autoCloseIn))} שניות...</p>
+                <div className="flex gap-3 mb-4">
+                    <Button 
+                        onClick={onContinue}
+                        className="h-auto min-h-12 px-8 py-3 text-lg font-bold flex-1"
+                    >
+                       אני בשוונג
+                    </Button>
                     <Button 
                         onClick={onStop}
                         variant="outline"
@@ -54,6 +48,12 @@ console.log(progressPercentage);
                     >
                         🛑 עצור
                     </Button>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                    <div 
+                        className="bg-primary h-full transition-all duration-75"
+                        style={{width: `${progressPercentage}%`}}
+                    />
                 </div>
             </div>
         </div>
