@@ -58,7 +58,9 @@ public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandl
 
         var correctMember = _selector.SelectOne(
             membersOfGender,
-            m => memberWeights.TryGetValue(m.MkId, out var weight) ? weight : null
+            m => memberWeights.TryGetValue(m.MkId, out var weight)
+                ? 1d / Math.Max(weight.Value, 0.0001d)
+                : null
         );
 
         var otherMembers = _selector.SelectMultiple(
