@@ -34,6 +34,12 @@ const QuestionPage = () => {
         if (!hasStarted) return;
         
         if (countdown === null) return;
+        
+        // Preload first question when countdown starts (countdown = 3)
+        if (countdown === 3 && !currentQuestion && !preloadedQuestion) {
+            preloadNextQuestion();
+        }
+        
         if (countdown === 0) {
             setCountdown(null);
             getNextQuestion();
@@ -42,7 +48,7 @@ const QuestionPage = () => {
 
         const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
         return () => clearTimeout(timer);
-    }, [countdown, hasStarted]);
+    }, [countdown, hasStarted, currentQuestion, preloadedQuestion]);
 
     const startGame = () => {
         setHasStarted(true);
