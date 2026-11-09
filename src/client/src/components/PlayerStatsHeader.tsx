@@ -12,8 +12,7 @@ interface PlayerStatsHeaderProps {
 const PlayerStatsHeader = memo(({ stats }: PlayerStatsHeaderProps) => {
     const { currentLevelXp: xp, level, streak } = useMemo(() => stats, [stats]);
     const nextLevelXP = stats.level.nextLevelXp  - stats.level.currentLevelXp || 0;
-    const currentLevelXP = stats.level.currentLevelXp || 0;
-    const progress = (xp - currentLevelXP) / (nextLevelXP - currentLevelXP) * 100;
+    const progress = xp / nextLevelXP * 100;
     return (
         <div className="shrink-0 space-y-2">
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3 text-base font-semibold sm:text-xl">

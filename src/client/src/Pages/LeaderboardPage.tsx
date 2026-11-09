@@ -11,10 +11,6 @@ import { useEffect, useMemo } from "react";
 export function LeaderboardPage() {
   const { id: browserUUID } = useUser();
   const { data: leaderboardData, isLoading, isError, error } = useQuery(userQueries.leaderboard())
-  // const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  // const [playerRank, setPlayerRank] = useState<number | null>(null);
-  // const [isLoading, setIsLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
 
   const playerRank = useMemo(() => {
     if (!leaderboardData) return null;
