@@ -185,11 +185,6 @@ const QuestionPage = () => {
             }, 5000);
         }
         
-        // Check for streak milestone (every 5 streak)
-        if (userStats.streak > 0 && userStats.streak % 5 === 0 && userStats.streak !== playerStatus?.streak) {
-            soundService.streak();
-        }
-        
         setPlayerStatus(userStats);
         showScore(e, xpGained);
         if (wrongAnswers.length >= 3 || isCorrect) {
