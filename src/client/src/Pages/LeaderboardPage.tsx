@@ -75,7 +75,8 @@ export function LeaderboardPage() {
                 <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">שם</th>
                 <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">רמה</th>
                 <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">נקודות</th>
-                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">סדרה</th>
+                <th className="px-2 py-3 text-center font-semibold text-xs sm:text-sm sm:px-4">רצף</th>
+                <th className="px-2 py-3 text-center font-semibold text-xs sm:text-sm sm:px-4">רצף שיא</th>
               </tr>
             </thead>
             <tbody>
@@ -113,9 +114,14 @@ export function LeaderboardPage() {
                   <td className="px-2 py-3 text-right sm:px-4 font-semibold text-sm">
                     {entry.xp.toLocaleString("he-IL")}
                   </td>
-                  <td className="px-2 py-3 text-right sm:px-4">
+                  <td className="px-2 py-3 text-center sm:px-4">
                     <span className="inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">
                       🔥 <span className="tabular-nums">{entry.streak}</span>
+                    </span>
+                  </td>
+                  <td className="px-2 py-3 text-center sm:px-4">
+                    <span className="inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">
+                      ⭐ <span className="tabular-nums">{entry.maxStreak}</span>
                     </span>
                   </td>
                 </tr>

@@ -1,4 +1,4 @@
-import { queryOptions, useMutation } from "@tanstack/react-query"
+import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import api from "./api"
 import z from 'zod';
 
@@ -20,7 +20,8 @@ const LeaderboardMember = z.object({
     name: z.string(),
     level: z.number(),
     streak: z.number(),
-    xp: z.number()
+    xp: z.number(),
+    maxStreak: z.number()
 });
 export type LeaderboardMember = z.infer<typeof LeaderboardMember>;
 export const userKeys = {
@@ -58,16 +59,21 @@ type UserMutationVariables = {
     name: string;
 };
 
-export const useUserMutation = (id:string) => {
+export const useUserMutation = (id: string) => {
+    const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (payload:UserMutationVariables) => {
+        mutationFn: async (payload: UserMutationVariables) => {
             await api.patch(`/user/${id}`, { name: payload.name });
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: userQueries.stats(id).queryKey });
+
         }
     })
 }
 
 
-export const useResetUserMutation = (id:string) => {
+export const useResetUserMutation = (id: string) => {
     return useMutation({
         mutationFn: async () => {
             await api.patch(`/user/${id}/reset`);

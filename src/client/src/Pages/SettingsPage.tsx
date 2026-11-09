@@ -49,7 +49,7 @@ export function SettingsPage({ }: { onRestart: () => void }) {
                         className="w-full px-4 py-2 border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     <div className="flex items-center gap-2">
-                        <Button onClick={saveName} className="h-auto min-h-10">
+                        <Button onClick={saveName} variant="default" className="h-auto min-h-10">
                             שמור שם
                         </Button>
                         {nameSaved && (
@@ -63,7 +63,7 @@ export function SettingsPage({ }: { onRestart: () => void }) {
             <div className="flex flex-col items-start gap-4 border-b py-6">
                 <h2 className="text-lg font-semibold">נתוני המשחק</h2>
                 <p className="max-w-2xl text-sm text-muted-foreground">האיפוס ימחק את הניקוד, הרמה, רצף התשובות ורמות ההיכרות השמורים בדפדפן הזה.</p>
-                <Button disabled variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
+                <Button variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
                     setError("");
                     confirmation.current?.showModal();
                 }}><Trash2 className="shrink-0" />מחיקת הנתונים והתחלה מחדש</Button>

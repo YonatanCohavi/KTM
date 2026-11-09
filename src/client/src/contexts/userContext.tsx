@@ -1,5 +1,5 @@
 import { userQueries, useUserMutation } from "@/services/user-api"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createContext, useContext, useMemo } from "react"
 
 type UserContextProps = {
@@ -36,7 +36,6 @@ function getPersistentBrowserUUID() {
 
 
 export const UserContextProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-    // const queryClient = useQueryClient();
     // const googleUserId = getGoogleUserId();
     // const currentUserId = googleUserId || getPersistentBrowserUUID();
     const currentUserId = getPersistentBrowserUUID();
@@ -44,7 +43,9 @@ export const UserContextProvider: React.FC<React.PropsWithChildren> = ({ childre
     const { data: userData } = useQuery(userQueries.stats(currentUserId));
     const { mutateAsync: updateUserAsync } = useUserMutation(currentUserId);
     
-    const setName = async (name: string) => await updateUserAsync({ name });
+    const setName = async (name: string) => {
+        await updateUserAsync({ name });
+    };
     
     // const loginWithGoogle = async (googleId: string, name: string) => {
     //     setGoogleUserId(googleId);
