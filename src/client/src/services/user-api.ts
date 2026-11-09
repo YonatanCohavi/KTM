@@ -57,6 +57,7 @@ export const userQueries = {
 type UserMutationVariables = {
     name: string;
 };
+
 export const useUserMutation = (id:string) => {
     return useMutation({
         mutationFn: async (payload:UserMutationVariables) => {
@@ -64,6 +65,12 @@ export const useUserMutation = (id:string) => {
         }
     })
 }
-export function setUserName(id: string, name: string){
-    return api.patch(`/user/${id}`, { name });
+
+
+export const useResetUserMutation = (id:string) => {
+    return useMutation({
+        mutationFn: async () => {
+            await api.patch(`/user/${id}/reset`);
+        }
+    })
 }

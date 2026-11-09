@@ -5,6 +5,7 @@ namespace Webapi.Featrues.Questions;
 
 public interface IBrowserWeightCache
 {
+    Task ResetWeightsAsync(string browserId, CancellationToken ct = default);
     Task<MemberWeight[]> GetWeightsAsync(string browserId, CancellationToken ct = default);
     void SetWeights(string browserId, Dictionary<int, double> weights);
     Task AdjustWeightAsync(string browserUuid, int memberId, bool known);
@@ -62,5 +63,11 @@ public class SupabaseBrowserWeightCache(IMemoryCache cache, Supabase.Client supa
 
     private static string GetCacheKey(string browserId) => $"{CacheKeyPrefix}{browserId}";
 
-   
+    public async Task ResetWeightsAsync(string browserId, CancellationToken ct = default)
+    {
+        await supabase
+              .From<BrowserWeight>()
+              .Where(bw => bw.BrowserUuid == browserId)
+              .Delete(cancellationToken: ct);
+    }
 }

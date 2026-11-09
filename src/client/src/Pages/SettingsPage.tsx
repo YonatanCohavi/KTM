@@ -2,58 +2,35 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/userContext";
 import { Settings, Trash2, User } from "lucide-react";
 import { useRef, useState } from "react";
+import { GoogleLogin } from "@/components/GoogleLogin";
 
 export function SettingsPage({ }: { onRestart: () => void }) {
-    const { name, setName } = useUser();
-    // return (
-    //     <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
-    //         <div className="text-6xl">🏗️</div>
-    //         <p className="text-lg font-semibold text-muted-foreground">עמוד זה בעדכון</p>
-    //         <p className="text-sm text-muted-foreground max-w-md">אנחנו עובדים על הגדרות המשחק. בקרו שוב בקרוב!</p>
-    //     </div>
-    // );
+    const { name, setName, resetUser } = useUser();
         const confirmation = useRef<HTMLDialogElement>(null);
         const nameInput = useRef<HTMLInputElement>(null);
         const [error, setError] = useState("");
         const [nameSaved, setNameSaved] = useState(false);
 
-        // async function saveName() {
-        //     const newName = nameInput.current?.value.trim() || "";
-        //     if (newName.length > 0 && newName.length <= 50) {
-        //         setName(newName);
-
-        //         // Sync immediately to leaderboard
-        //         const stats = loadStats();
-        //         await syncPlayerToLeaderboard(browserUUID, newName, stats.level, stats.xp, stats.streak);
-
-        //         setNameSaved(true);
-        //         setTimeout(() => setNameSaved(false), 2000);
-        //     }
-        // }
      async function saveName() {
         await setName(nameInput.current?.value.trim() || "");
         setNameSaved(true);
         setTimeout(() => setNameSaved(false), 2000);
      }
      
-     async function restartGame() {}
-        // async function restartGame() {
-        //     let stats;
-        //     try {
-        //         stats = resetStats();
-        //         clearLocalLeaderboard();
-        //         localStorage.removeItem("memberWeights");
-        //     } catch {
-        //         setError("לא הצלחנו למחוק את הנתונים. נסו שוב.");
-        //         return;
-        //     }
-        //     await syncPlayerToLeaderboard(browserUUID, name, stats.level, stats.xp, stats.streak);
-        //     confirmation.current?.close();
-        //     onRestart();
-        // }
+     async function restartGame() {
+        await resetUser();
+        confirmation.current?.close();
+     }
 
         return <section className="h-full overflow-y-auto px-3 py-4 sm:p-6 lg:max-w-2xl lg:mx-auto" aria-labelledby="settings-heading" dir="rtl">
             <h1 id="settings-heading" className="mb-6 flex items-center gap-2 text-2xl font-semibold"><Settings className="size-6" />הגדרות</h1>
+
+            {/* Google Login */}
+            <div className="flex flex-col items-start gap-4 border-b py-6">
+                <h2 className="text-lg font-semibold">כניסה עם חשבון Google</h2>
+                <p className="max-w-2xl text-sm text-muted-foreground">התחבר עם Google כדי לשמור את ההתקדמות שלך בחשבון קבוע</p>
+                <GoogleLogin />
+            </div>
 
             {/* Player Name Settings */}
             <div className="flex flex-col items-start gap-4 border-b py-6">
@@ -86,7 +63,7 @@ export function SettingsPage({ }: { onRestart: () => void }) {
             <div className="flex flex-col items-start gap-4 border-b py-6">
                 <h2 className="text-lg font-semibold">נתוני המשחק</h2>
                 <p className="max-w-2xl text-sm text-muted-foreground">האיפוס ימחק את הניקוד, הרמה, רצף התשובות ורמות ההיכרות השמורים בדפדפן הזה.</p>
-                <Button disabled variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
+                <Button variant="destructive" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => {
                     setError("");
                     confirmation.current?.showModal();
                 }}><Trash2 className="shrink-0" />מחיקת הנתונים והתחלה מחדש</Button>
