@@ -1,5 +1,5 @@
 import { userQueries, useUserMutation } from "@/services/user-api"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createContext, useContext, useMemo } from "react"
 
 type UserContextProps = {
