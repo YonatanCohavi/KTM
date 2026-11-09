@@ -4,7 +4,7 @@ import { Settings, Trash2, User } from "lucide-react";
 import { useRef, useState } from "react";
 
 export function SettingsPage({ }: { onRestart: () => void }) {
-    const { id: browserUUID, name, setName } = useUser();
+    const { name, setName } = useUser();
     // return (
     //     <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
     //         <div className="text-6xl">🏗️</div>

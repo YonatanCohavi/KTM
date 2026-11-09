@@ -19,9 +19,10 @@ export const questionsKeys = {
 
 export function useNextQuestion({ browserUUID }: { browserUUID: string }) {
     return useMutation({
-        mutationFn: async () => {
+        mutationFn: async ({prevQuestionId}: { prevQuestionId?: string }) => {
             const response = await api.post('/question/next', {
-                'BrowserId': browserUUID
+                'BrowserId': browserUUID,
+                'PrevQuestionId': prevQuestionId
             });
             return z.object({ question: QuestionResponse }).parse(response.data);
         },

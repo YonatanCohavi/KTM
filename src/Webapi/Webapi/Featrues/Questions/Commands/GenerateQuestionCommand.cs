@@ -17,7 +17,7 @@ public class QuizQuestion
     public required QuestionOption[] Options { get; set; }
 }
 
-public record struct GenerateQuestionCommand(string UserId) : ICommand<QuizQuestion>;
+public record struct GenerateQuestionCommand(string UserId, Guid? PrevQuestionId) : ICommand<QuizQuestion>;
 
 public record GenerateQuestionCommandWithWeights(
     string UserId,
@@ -31,12 +31,25 @@ public class GenerateQuestionCommandHandler(ILogger<GenerateQuestionCommandHandl
     private readonly WeightedRandomSelector _selector = new();
     public async Task<QuizQuestion> ExecuteAsync(GenerateQuestionCommand command, CancellationToken ct)
     {
+
+        int[] membersToExclude = [];
+        if (command.PrevQuestionId.HasValue)
+        {
+            if (memoryCache.TryGetValue<CachedQuestion>(CachedQuestion.CacheKey(command.PrevQuestionId.Value), out var cachedPrevQuestion))
+            {
+                var options = cachedPrevQuestion!.Options;
+                var currectMemberId = cachedPrevQuestion.CorrectMemberId;
+                membersToExclude = [.. options, currectMemberId];
+            }
+        }
+
         var weights = await weightCache.GetWeightsAsync(command.UserId, ct);
         var members = await knessetAPI.GetKnessetMembersAsync(ct);
         var memberWeights = weights.ToDictionary(w => w.MemberId, w => (double?)w.Knowlage);
 
         var selectedGender = members[_random.Next(members.Length)].GenderId;
         var membersOfGender = members
+            .Where(m => !membersToExclude.Contains(m.MkId))
             .Where(m => m.GenderId == selectedGender)
             .ToList();
 

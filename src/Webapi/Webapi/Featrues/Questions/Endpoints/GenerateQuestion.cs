@@ -9,7 +9,7 @@ public class ResponseQuizQuestion
     public required QuestionOption[] Options { get; set; }
 }
 public record struct GenerateQuestionResponse(ResponseQuizQuestion Question);
-public record GenerateQuestionRequest(string BrowserId);
+public record GenerateQuestionRequest(string BrowserId,string? PrevQuestionId);
 public class GenerateQuestion : Endpoint<GenerateQuestionRequest, GenerateQuestionResponse>
 {
     public override void Configure()
@@ -19,7 +19,7 @@ public class GenerateQuestion : Endpoint<GenerateQuestionRequest, GenerateQuesti
 
     public override async Task<GenerateQuestionResponse> ExecuteAsync(GenerateQuestionRequest req, CancellationToken ct)
     {
-        var question = await new GenerateQuestionCommand(req.BrowserId).ExecuteAsync(ct);
+        var question = await new GenerateQuestionCommand(req.BrowserId, req.PrevQuestionId).ExecuteAsync(ct);
         return new GenerateQuestionResponse(new ResponseQuizQuestion
         {
             Id = question.Id,

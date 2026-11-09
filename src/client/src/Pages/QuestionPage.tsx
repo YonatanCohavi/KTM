@@ -53,7 +53,7 @@ const QuestionPage = () => {
         if (isPreloading || preloadedQuestion) return;
         setIsPreloading(true);
         try {
-            const data = await fetchNextQuestion();
+            const data = await fetchNextQuestion({ prevQuestionId: currentQuestion?.id });
             preloadMainImage(data.question);
             preLoadMemberImages(data.question.options.map(option => option.id));
             setPreloadedQuestion(data.question);
@@ -72,7 +72,7 @@ const QuestionPage = () => {
             setQuestionStartTime(null);
             setWrongAnswers([]);
         } else {
-            fetchNextQuestion(undefined, {
+            fetchNextQuestion({ prevQuestionId: currentQuestion?.id }, {
                 onSuccess: (data) => {
                     setCurrentQuestion(data.question);
                     setElapsedSeconds(0);
