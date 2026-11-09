@@ -10,7 +10,7 @@ import { userQueries, UserStats } from "@/services/user-api";
 import { soundService } from "@/services/soundService";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { useQuery } from "@tanstack/react-query";
-import { LoaderCircle, RotateCcw } from "lucide-react";
+import { LoaderCircle, Pause, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface FloatingNumber {
@@ -27,10 +27,28 @@ const QuestionPage = () => {
     const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse>();
     const [preloadedQuestion, setPreloadedQuestion] = useState<QuestionResponse>();
     const [isPreloading, setIsPreloading] = useState(false);
+    const [hasStarted, setHasStarted] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const [countdown, setCountdown] = useState<number | null>(null);
 
     useEffect(() => {
-        getNextQuestion();
-    }, []);
+        if (!hasStarted) return;
+        
+        if (countdown === null) return;
+        if (countdown === 0) {
+            setCountdown(null);
+            getNextQuestion();
+            return;
+        }
+
+        const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        return () => clearTimeout(timer);
+    }, [countdown, hasStarted]);
+
+    const startGame = () => {
+        setHasStarted(true);
+        setCountdown(3);
+    };
 
     const questionImageUrl = (questionId: string) => {
         return `${import.meta.env.VITE_API_BASE_URL}/question/${questionId}/image`;
@@ -177,6 +195,39 @@ const QuestionPage = () => {
         }
     }
    
+    if (!hasStarted) {
+        return <div className="flex h-full flex-col justify-center items-center gap-6 px-4">
+            <div className="text-center">
+                <div className="text-6xl mb-4">🎮</div>
+                <h1 className="text-3xl font-bold mb-2">הכר את החבר</h1>
+                <p className="text-lg text-muted-foreground mb-8">בחן את ידיעתך בנושא חברי הכנסת</p>
+            </div>
+            <Button onClick={startGame} className="h-auto min-h-12 px-8 py-3 text-lg">
+                התחל משחק
+            </Button>
+        </div>;
+    }
+
+    if (countdown !== null) {
+        return <div className="flex h-full flex-col justify-center items-center gap-4">
+            <p className="text-2xl text-muted-foreground">מתחילים בעוד</p>
+            <div className="text-8xl font-bold text-primary">{countdown}</div>
+        </div>;
+    }
+
+    if (isPaused) {
+        return <div className="flex h-full flex-col justify-center items-center gap-6">
+            <div className="text-center">
+                <div className="text-6xl mb-4">⏸️</div>
+                <h2 className="text-2xl font-semibold mb-4">המשחק מושהה</h2>
+                <p className="text-muted-foreground mb-8">קח הפסקה וחזור כשאתה מוכן</p>
+            </div>
+            <Button onClick={() => setIsPaused(false)} className="h-auto min-h-12 px-8 py-3 text-lg">
+                המשך משחק
+            </Button>
+        </div>;
+    }
+   
     if (!currentQuestion)
         return <div className="flex h-full flex-col justify-center items-center gap-1.5 waiting-chairs">
             <div className="text-5xl ">🪑 🪑 🪑</div>
@@ -214,6 +265,16 @@ const QuestionPage = () => {
                         </span>}
                     </AvatarFallback>
                 </Avatar>
+            </div>
+            <div className="flex justify-center">
+                <Button
+                variant='ghost'
+                    onClick={() => setIsPaused(true)}
+                    title="השהה המשחק"
+                    className="h-11 sm:h-14 lg:text-lg  aspect-square"
+                >
+                    <Pause  className="size-6" />
+                </Button>
             </div>
             <div className="grid shrink-0 gap-1 sm:gap-2 lg:grid-cols-2 lg:gap-3">
                 {currentQuestion?.options.map((option) => (
