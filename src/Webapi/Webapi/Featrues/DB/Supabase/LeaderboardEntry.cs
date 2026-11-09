@@ -21,6 +21,8 @@ public class LeaderboardEntry : BaseModel
     [Column("xp")]
     public int Xp { get; set; }
 
+    [Column("max_streak")]
+    public int MaxStreak { get; set; }
     [Column("streak")]
     public int Streak { get; set; }
 

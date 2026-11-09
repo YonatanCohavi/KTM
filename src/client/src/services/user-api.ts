@@ -53,3 +53,7 @@ export const userQueries = {
         }
     })
 }
+
+export function setUserName(id: string, name: string){
+    return api.patch(`/user/${id}`, { name });
+}
