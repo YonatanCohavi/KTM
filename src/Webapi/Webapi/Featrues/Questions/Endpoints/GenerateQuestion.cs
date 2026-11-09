@@ -9,7 +9,7 @@ public class ResponseQuizQuestion
     public required QuestionOption[] Options { get; set; }
 }
 public record struct GenerateQuestionResponse(ResponseQuizQuestion Question);
-public record GenerateQuestionRequest(string BrowserId,string? PrevQuestionId);
+public record GenerateQuestionRequest(string BrowserId, Guid? PrevQuestionId);
 public class GenerateQuestion : Endpoint<GenerateQuestionRequest, GenerateQuestionResponse>
 {
     public override void Configure()
