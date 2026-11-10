@@ -1,18 +1,18 @@
 import FireworksComponent from "@/components/FireworksComponent";
+import { GameBreakScreen } from "@/components/GameBreakScreen";
+import { GameStartScreen } from "@/components/GameStartScreen";
 import { PlayerStatsHeader } from "@/components/PlayerStatsHeader";
 import { TimeBonusMeter } from "@/components/TimeBonusMeter";
-import { GameStartScreen } from "@/components/GameStartScreen";
-import { GameBreakScreen } from "@/components/GameBreakScreen";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/userContext";
 import { cn } from "@/lib/utils";
 import { useAnswer, useNextQuestion, type QuestionResponse } from "@/services/question-api";
-import { userQueries, UserStats } from "@/services/user-api";
 import { soundService } from "@/services/soundService";
+import { userQueries, UserStats } from "@/services/user-api";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { useQuery } from "@tanstack/react-query";
-import { Coffee, DoorOpen, LoaderCircle, Pause, RotateCcw } from "lucide-react";
+import { Coffee, LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface FloatingNumber {
