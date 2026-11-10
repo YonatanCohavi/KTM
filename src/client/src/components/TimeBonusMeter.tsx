@@ -18,7 +18,7 @@ const TimeBonusMeter = ({ elapsedSeconds }: TimeBonusMeterProps) => {
 
     return (
         <div className={cn("flex shrink-0 items-center gap-2 text-xs font-semibold tabular-nums transition-opacity duration-300", timeProgress >= 100 && "opacity-0")} dir="rtl">
-            <span className="shrink-0 text-emerald-700 uppercase tracking-wider text-[10px]">⚡ Bonus</span>
+            <span className="shrink-0 text-emerald-700 uppercase tracking-wider text-[10px]">⚡ בונוס</span>
             <span className={cn("w-10 shrink-0", timeBonusPercent > 0 ? "text-emerald-700" : "text-muted-foreground")}>
                 +{timeBonusPercent}%
             </span>

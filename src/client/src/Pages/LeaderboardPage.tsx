@@ -20,7 +20,7 @@ export function LeaderboardPage() {
   useEffect(() => { console.log(leaderboardData) }, [leaderboardData]);
   return (
     <section
-      className="h-full overflow-y-auto px-3 py-4 sm:p-6 lg:max-w-2xl lg:mx-auto"
+      className="h-full min-w-0 overflow-y-auto px-3 py-4 sm:p-6 lg:max-w-2xl lg:mx-auto"
       aria-labelledby="leaderboard-heading"
       dir="rtl"
     >
@@ -67,12 +67,12 @@ export function LeaderboardPage() {
 
       {/* Leaderboard Table */}
       {!isLoading && leaderboardData && leaderboardData.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="w-full max-w-full overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-xl table-fixed text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">דירוג</th>
-                <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">שם</th>
+                <th className="sticky right-0 z-20 w-20 bg-muted px-2 py-3 text-right text-xs font-semibold sm:px-4 sm:text-sm">דירוג</th>
+                <th className="sticky right-20 z-20 w-36 bg-muted px-2 py-3 text-right text-xs font-semibold sm:px-4 sm:text-sm">שם</th>
                 <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">רמה</th>
                 <th className="px-2 py-3 text-right font-semibold text-xs sm:text-sm sm:px-4">נקודות</th>
                 <th className="px-2 py-3 text-center font-semibold text-xs sm:text-sm sm:px-4">רצף</th>
@@ -80,15 +80,19 @@ export function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {leaderboardData.map((entry, index) => (
+              {leaderboardData.map((entry, index) => {
+                const isCurrentPlayer = entry.userId === browserUUID;
+                return (
                 <tr
                   key={entry.userId}
                   className={cn(
-                    "border-b transition-colors hover:bg-muted/50",
-                    entry.userId === browserUUID && "bg-primary/10 font-semibold"
+                    "group border-b transition-colors hover:bg-muted/50",
+                    isCurrentPlayer && "bg-primary/10 font-semibold"
                   )}
                 >
-                  <td className="px-2 py-3 text-right sm:px-4">
+                  <td className={cn(
+                    "sticky right-0 z-10 w-20 bg-background px-2 py-3 text-right group-hover:bg-muted sm:px-4"
+                  )} style={{ backgroundColor: isCurrentPlayer ? "color-mix(in oklab, var(--primary) 10%, var(--background))" : undefined }}>
                     <div className="flex items-center gap-1 justify-end">
                       {index === 0 && <Trophy className="size-4 text-yellow-500 shrink-0" />}
                       {index === 1 && <Trophy className="size-4 text-gray-400 shrink-0" />}
@@ -98,7 +102,9 @@ export function LeaderboardPage() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-2 py-3 text-right sm:px-4">
+                  <td className={cn(
+                    "sticky right-20 z-10 w-36 bg-background px-2 py-3 text-right group-hover:bg-muted sm:px-4"
+                  )} style={{ backgroundColor: isCurrentPlayer ? "color-mix(in oklab, var(--primary) 10%, var(--background))" : undefined }}>
                     <span className="truncate block max-w-xs text-sm">
                       {entry.name || "Anonymous"}
                     </span>
@@ -125,7 +131,8 @@ export function LeaderboardPage() {
                     </span>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
