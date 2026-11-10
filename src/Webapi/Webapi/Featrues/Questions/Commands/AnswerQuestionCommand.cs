@@ -28,7 +28,7 @@ public class AnswerQuestionCommandHandler(
 
         if (question.WrongAnswerCount >= 3)
         {
-            var streak = memberSessionManager.RegisterAnswer(question.UserId, false);
+            var streak = await memberSessionManager.RegisterAnswerAsync(question.UserId, false, ct);
             memoryCache.Remove(cacheKey);
             var penaltyXp = memberSessionManager.GetWrongPenelty();
             var xpAfterPenalty = await leaderboardXpStore.UpdateXpAsync(question.UserId, penaltyXp, streak, ct);
@@ -59,7 +59,7 @@ public class AnswerQuestionCommandHandler(
             }
         }, ct);
 
-        var currentStreak = memberSessionManager.RegisterAnswer(question.UserId, isCorrect);
+        var currentStreak = await memberSessionManager.RegisterAnswerAsync(question.UserId, isCorrect, ct);
         int userXp;
         int xpGained;
 

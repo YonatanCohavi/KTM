@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.Caching.Memory;
+using Webapi.Featrues.Questions;
 
 namespace Webapi.Featrues.Members;
 
-public class MemberSessionManager(IMemoryCache memoryCache) : IMemberSessionManager
+public class MemberSessionManager(IMemoryCache memoryCache, ILeaderboardXpStore leaderboardXpStore) : IMemberSessionManager
 {
     private const double _streakBonusPerQuestion = 0.05;
     private const int _baseValue = 10;
@@ -17,11 +18,18 @@ public class MemberSessionManager(IMemoryCache memoryCache) : IMemberSessionMana
     ];
 
     public int GetWrongPenelty() => _baseValue * -1;
-    public int RegisterAnswer(string userId, bool isCorrect)
+    public async Task<int> RegisterAnswerAsync(string userId, bool isCorrect, CancellationToken ct = default)
     {
         var streakKey = GetStreakCacheKey(userId);
-        var currentStreak = memoryCache.Get<int>(streakKey);
-        var nextStreak = isCorrect ? currentStreak + 1 : 0;
+        var currentStreak = memoryCache.Get<int?>(streakKey);
+
+        if (!currentStreak.HasValue)
+        {
+            var user = await leaderboardXpStore.GetUserEntry(userId);
+            currentStreak = user.Streak;
+        }
+
+        var nextStreak = isCorrect ? currentStreak.Value + 1 : 0;
 
         memoryCache.Set(streakKey, nextStreak, new MemoryCacheEntryOptions
         {
