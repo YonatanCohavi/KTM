@@ -1,4 +1,5 @@
 import { LevelIcon } from "@/components/LevelIcon";
+import { RollingNumber } from "@/components/RollingNumber";
 import { Progress } from "@/components/ui/progress";
 import { getLevelName } from "@/services/statsService";
 import type { UserStats } from "@/services/user-api";
@@ -21,7 +22,7 @@ const PlayerStatsHeader = memo(({ stats }: PlayerStatsHeaderProps) => {
                     <div className="flex min-h-7 flex-wrap items-center gap-2">
                         <Trophy className="size-5 shrink-0" aria-hidden="true" />
                         <bdi dir="ltr" className="whitespace-nowrap tabular-nums">
-                            {xp.toLocaleString()}<span className="text-sm font-normal text-muted-foreground"> / {nextLevelXP.toLocaleString()}</span>
+                            <RollingNumber value={xp} /><span className="text-sm font-normal text-muted-foreground"> / {nextLevelXP.toLocaleString()}</span>
                         </bdi>
                     </div>
                 </div>
