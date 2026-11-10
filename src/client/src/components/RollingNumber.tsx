@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useLayoutEffect, useState, type CSSProperties } from "react";
 
 interface RollingNumberProps {
     value: number;
@@ -6,7 +7,21 @@ interface RollingNumberProps {
 }
 
 const RollingNumber = ({ value, className }: RollingNumberProps) => {
-    const formattedValue = new Intl.NumberFormat().format(value);
+    const [rollingValue, setRollingValue] = useState({ previous: value, current: value, direction: 0 });
+
+    useLayoutEffect(() => {
+        setRollingValue((previous) => previous.current === value ? previous : {
+            previous: previous.current,
+            current: value,
+            direction: value > previous.current ? 1 : -1,
+        });
+    }, [value]);
+
+    const formattedValue = new Intl.NumberFormat().format(rollingValue.current);
+    const previousDigits = Array.from(new Intl.NumberFormat().format(rollingValue.previous))
+        .reverse()
+        .filter((character) => /[0-9]/.test(character))
+        .map(Number);
     let digitPlace = 0;
     const characters = Array.from(formattedValue).reverse().map((character) => {
         const isDigit = /[0-9]/.test(character);
@@ -22,11 +37,12 @@ const RollingNumber = ({ value, className }: RollingNumberProps) => {
                 {characters.map(({ character, isDigit, place }, index) => isDigit ? (
                     <span key={`digit-${place}`} className="inline-flex h-[1em] w-[0.62em] justify-center overflow-hidden align-bottom">
                         <span
-                            className="flex h-[10em] shrink-0 flex-col self-start transition-transform duration-500 ease-out motion-reduce:transition-none"
-                            style={{ transform: `translateY(-${Number(character) * 10}%)` }}
+                            key={`${rollingValue.current}-${place}`}
+                            className={cn("flex h-[30em] shrink-0 flex-col self-start", rollingValue.direction !== 0 && "rolling-digit-track")}
+                            style={getDigitTrackStyle(Number(character), previousDigits[place] ?? 0, rollingValue.direction)}
                         >
-                            {Array.from({ length: 10 }, (_, digit) => (
-                                <span key={digit} className="h-[1em] shrink-0 leading-none">{digit}</span>
+                            {Array.from({ length: 30 }, (_, index) => (
+                                <span key={index} className="h-[1em] shrink-0 leading-none">{index % 10}</span>
                             ))}
                         </span>
                     </span>
@@ -39,5 +55,21 @@ const RollingNumber = ({ value, className }: RollingNumberProps) => {
         </span>
     );
 };
+
+function getDigitTrackStyle(digit: number, previousDigit: number, direction: number): CSSProperties {
+    const distance = direction > 0
+        ? (digit - previousDigit + 10) % 10
+        : direction < 0
+            ? -((previousDigit - digit + 10) % 10)
+            : 0;
+    const from = 10 + previousDigit;
+    const to = from + distance;
+
+    return {
+        "--roll-from": `-${from}em`,
+        "--roll-to": `-${to}em`,
+        transform: `translateY(-${to}em)`,
+    } as CSSProperties;
+}
 
 export { RollingNumber };
