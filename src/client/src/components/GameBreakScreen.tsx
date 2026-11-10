@@ -37,9 +37,14 @@ export function GameBreakScreen({ questionsAnswered, onContinue, onStop }: GameB
                 <div className="flex gap-3 mb-4">
                     <Button 
                         onClick={onContinue}
-                        className="h-auto min-h-12 px-8 py-3 text-lg font-bold flex-1"
+                        className="relative h-auto min-h-12 flex-1 overflow-hidden px-8 py-3 text-lg font-bold"
                     >
-                       אני בשוונג
+                        <span className="relative z-10">אני בשוונג</span>
+                        <span
+                            aria-hidden="true"
+                            className="absolute inset-y-0 right-0 bg-primary-foreground/20 transition-[width] duration-75"
+                            style={{ width: `${progressPercentage}%` }}
+                        />
                     </Button>
                     <Button 
                         onClick={onStop}
@@ -48,12 +53,6 @@ export function GameBreakScreen({ questionsAnswered, onContinue, onStop }: GameB
                     >
                         🛑 עצור
                     </Button>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                    <div 
-                        className="bg-primary h-full transition-all duration-75"
-                        style={{width: `${progressPercentage}%`}}
-                    />
                 </div>
             </div>
         </div>

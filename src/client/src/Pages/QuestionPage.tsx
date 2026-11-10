@@ -12,7 +12,7 @@ import { userQueries, UserStats } from "@/services/user-api";
 import { soundService } from "@/services/soundService";
 import type { FireworksHandlers } from '@fireworks-js/react';
 import { useQuery } from "@tanstack/react-query";
-import { LoaderCircle, Pause, RotateCcw } from "lucide-react";
+import { Coffee, DoorOpen, LoaderCircle, Pause, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface FloatingNumber {
@@ -32,7 +32,7 @@ const QuestionPage = () => {
     const [hasStarted, setHasStarted] = useState(false);
     const [countdown, setCountdown] = useState<number | null>(null);
     const [questionsAnswered, setQuestionsAnswered] = useState(0);
-    const [showBreak, setShowBreak] = useState(true);
+    const [showBreak, setShowBreak] = useState(false);
 
     useEffect(() => {
         if (!hasStarted) return;
@@ -54,7 +54,14 @@ const QuestionPage = () => {
         return () => clearTimeout(timer);
     }, [countdown, hasStarted, currentQuestion, preloadedQuestion]);
 
+    useEffect(() => {
+        if (countdown !== null) {
+            soundService.countdown(countdown === 0);
+        }
+    }, [countdown]);
+
     const startGame = () => {
+        soundService.unlock();
         setHasStarted(true);
         setCountdown(3);
     };
@@ -214,8 +221,7 @@ const QuestionPage = () => {
 
     if (countdown !== null) {
         return <div className="flex h-full flex-col justify-center items-center gap-4">
-            <p className="text-2xl text-muted-foreground">מתחילים בעוד</p>
-            <div key={countdown} className="text-8xl font-bold text-primary countdown-number">{countdown}</div>
+            <div key={countdown} className="text-9xl font-bold text-primary countdown-number">{countdown}</div>
         </div>;
     }
 
@@ -227,6 +233,7 @@ const QuestionPage = () => {
                 getNextQuestion();
             }}
             onStop={() => {
+                soundService.stop();
                 setShowBreak(false);
                 setHasStarted(false);
                 setCountdown(null);
@@ -277,13 +284,15 @@ const QuestionPage = () => {
                 <Button
                     variant='ghost'
                     onClick={() => {
+                        soundService.stop();
                         setHasStarted(false);
                         setCountdown(null);
                     }}
-                    title="עצור המשחק"
+                    title="עצור את המשחק"
                     className="h-11 sm:h-14 lg:text-lg  aspect-square"
                 >
-                    <Pause  className="size-6" />
+                    <Coffee  className="size-6" />
+                    הפסקת קפה
                 </Button>
             </div>
             <div className="grid shrink-0 gap-1 sm:gap-2 lg:grid-cols-2 lg:gap-3">

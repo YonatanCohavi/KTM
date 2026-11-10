@@ -8,6 +8,18 @@ function isMuted() {
 
 function playTone(frequency: number, duration: number, type: 'sine' | 'triangle' = 'sine', volume: number = 0.3) {
     if (!audioContext || isMuted()) return;
+    if (audioContext.state !== 'running') {
+        void audioContext.resume().then(() => {
+            if (!isMuted()) scheduleTone(frequency, duration, type, volume);
+        }).catch(() => undefined);
+        return;
+    }
+
+    scheduleTone(frequency, duration, type, volume);
+}
+
+function scheduleTone(frequency: number, duration: number, type: 'sine' | 'triangle', volume: number) {
+    if (!audioContext) return;
 
     const osc = audioContext.createOscillator();
     const gain = audioContext.createGain();
@@ -21,7 +33,7 @@ function playTone(frequency: number, duration: number, type: 'sine' | 'triangle'
     // Fade in
     gain.gain.setValueAtTime(0, audioContext.currentTime);
     gain.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
-    
+
     // Fade out
     gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
 
@@ -30,6 +42,27 @@ function playTone(frequency: number, duration: number, type: 'sine' | 'triangle'
 }
 
 export const soundService = {
+    unlock: () => {
+        if (audioContext && audioContext.state !== 'running') {
+            void audioContext.resume().catch(() => undefined);
+        }
+    },
+
+    // Gentle descending cue when leaving a game session
+    stop: () => {
+        playTone(494, 0.12, 'sine', 0.18);
+        setTimeout(() => playTone(370, 0.18, 'sine', 0.18), 90);
+    },
+
+    // Soft countdown beeps, followed by a brighter two-tone start cue
+    countdown: (isFinal = false) => {
+        if (isFinal) {
+            playTone(1175, 0.24, 'sine', 0.34)
+            return;
+        }
+        playTone(659, 0.11, 'sine', 0.16);
+    },
+
     // Correct answer - pleasant ascending tones
     correct: () => {
         playTone(523, 0.1, 'sine', 0.25);  // C5
