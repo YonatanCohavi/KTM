@@ -51,12 +51,17 @@ export function GameStartScreen({ onStart }: GameStartScreenProps) {
                     </div>
                 </div>
 
-                <div className="flex gap-2 p-2 rounded-lg bg-muted/50 border border-primary/20 hover:border-primary/50 transition-colors">
+                <div 
+                  onClick={() => navigateTo("/leaderboard")}
+                className="flex gap-2 p-3 rounded-lg bg-primary/10 border border-primary/40 hover:border-primary hover:bg-primary/20 active:bg-primary/30 transition-all cursor-pointer active:scale-95 group">
                     <span className="text-2xl shrink-0">🏆</span>
                     <div className="min-w-0">
                         <p className="font-semibold text-xs">לוח דירוג</p>
                         <p className="text-xs text-muted-foreground leading-tight">תחרוּ עם אחרים</p>
                     </div>
+                    <div className="flex-1"></div>
+                    <ChevronLeft className="size-4 shrink-0 text-primary opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity" />
+
                 </div>
 
                 <button
@@ -64,10 +69,12 @@ export function GameStartScreen({ onStart }: GameStartScreenProps) {
                     className="flex gap-2 p-3 rounded-lg bg-primary/10 border border-primary/40 hover:border-primary hover:bg-primary/20 active:bg-primary/30 transition-all cursor-pointer active:scale-95 group"
                 >
                     <span className="text-2xl shrink-0">👥</span>
-                    <div className="min-w-0 text-left flex-1">
+                    <div className="min-w-0 text-start">
                         <p className="font-semibold text-xs">כל החברים</p>
                         <p className="text-xs text-muted-foreground leading-tight">ספריית חברים</p>
                     </div>
+                    <div className="flex-1"></div>
+
                     <ChevronLeft className="size-4 shrink-0 text-primary opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity" />
                 </button>
 
@@ -76,10 +83,11 @@ export function GameStartScreen({ onStart }: GameStartScreenProps) {
                     className="flex gap-2 p-3 rounded-lg bg-primary/10 border border-primary/40 hover:border-primary hover:bg-primary/20 active:bg-primary/30 transition-all cursor-pointer active:scale-95 col-span-2 group"
                 >
                     <span className="text-2xl shrink-0">⚙️</span>
-                    <div className="min-w-0 text-left flex-1">
+                    <div className="min-w-0 text-start">
                         <p className="font-semibold text-xs">הגדרות</p>
                         <p className="text-xs text-muted-foreground leading-tight">שנו שם, נהלו פרופיל והעדפות</p>
                     </div>
+                    <div className="flex-1"></div>
                     <ChevronLeft className="size-4 shrink-0 text-primary opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity" />
                 </button>
             </div>

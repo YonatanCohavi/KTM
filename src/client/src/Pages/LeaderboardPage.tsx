@@ -67,7 +67,47 @@ export function LeaderboardPage() {
 
       {/* Leaderboard Table */}
       {!isLoading && leaderboardData && leaderboardData.length > 0 && (
-        <div className="w-full max-w-full overflow-x-auto rounded-lg border">
+        <>
+        <ol aria-label="דירוג הנקודות" className="mb-4 divide-y overflow-hidden rounded-lg border sm:hidden">
+          {leaderboardData.map((entry, index) => (
+            <li
+              key={entry.userId}
+              className={cn("flex min-w-0 items-center gap-3 p-3", entry.userId === browserUUID && "bg-primary/5")}
+            >
+              <div className="flex size-10 shrink-0 items-center justify-center">
+                {index < 3 ? (
+                  <Trophy
+                    className={cn(
+                      "size-5",
+                      index === 0 && "text-yellow-500",
+                      index === 1 && "text-gray-400",
+                      index === 2 && "text-orange-600"
+                    )}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <span className={cn("font-semibold tabular-nums", index < 3 && "sr-only")}>#{index + 1}</span>
+                {index < 3 && <span className="sr-only">מקום {index + 1}</span>}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <span className="truncate font-semibold">{entry.name || "Anonymous"}</span>
+                  <span className="shrink-0 whitespace-nowrap text-base font-bold tabular-nums" aria-label={`${entry.xp.toLocaleString("he-IL")} נקודות`}>
+                    {entry.xp.toLocaleString("he-IL")}
+                  </span>
+                </div>
+                <div className="mt-1 flex min-w-0 items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span className="truncate">{getLevelName(entry.level)} · {entry.level}</span>
+                  <span className="flex shrink-0 items-center gap-3 tabular-nums">
+                    <span aria-label={`רצף ${entry.streak}`}><span aria-hidden="true">🔥 </span>{entry.streak}</span>
+                    <span aria-label={`רצף שיא ${entry.maxStreak}`}><span aria-hidden="true">⭐ </span>{entry.maxStreak}</span>
+                  </span>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="hidden w-full max-w-full overflow-x-auto rounded-lg border sm:block">
           <table className="w-full min-w-xl table-fixed text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
@@ -136,6 +176,7 @@ export function LeaderboardPage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {/* Empty State */}
